@@ -1,0 +1,11 @@
+installed:
+  - id: github
+    version: "1.0.2"
+    enabled: true
+  - id: assess
+    version: "1.0.1"
+    enabled: true
+  - id: bug
+    version: "1.0.1"
+    enabled: true
+hooks: {}

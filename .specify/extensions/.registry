@@ -1,0 +1,23 @@
+{
+  "schema_version": "1.0",
+  "extensions": {
+    "assess": {
+      "version": "1.0.1",
+      "source": "bundled",
+      "enabled": true,
+      "priority": 10
+    },
+    "bug": {
+      "version": "1.0.1",
+      "source": "bundled",
+      "enabled": true,
+      "priority": 10
+    },
+    "github": {
+      "version": "1.0.2",
+      "source": "bundled",
+      "enabled": true,
+      "priority": 10
+    }
+  }
+}

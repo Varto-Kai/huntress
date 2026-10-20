@@ -1,7 +1,14 @@
-# 📜 CONSTITUIÇÃO DO PROJETO HUNTRESS (v1.0)
+<!--
+NOTA: Este arquivo é o espelho em docs/ da Constituição canônica utilizada pelo GitHub Spec Kit
+em `.specify/memory/constitution.md`. Qualquer alteração via `/speckit-constitution` deve manter
+ambos sincronizados.
+-->
 
-> **Etapa do Ciclo SDD:** `1. Constituição`  
+# 📜 CONSTITUIÇÃO DO PROJETO HUNTRESS (v1.1.0)
+
+> **Etapa do Ciclo SDD:** `1. Constituição` (`/speckit-constitution`)  
 > **Engine & Linguagem:** Godot 4.x | GDScript Estrito (Tipagem Estática)  
+> **Localização Canônica Spec Kit:** [`.specify/memory/constitution.md`](../.specify/memory/constitution.md)  
 > **Propósito:** Definir as leis imutáveis de arquitetura, qualidade, testes, segurança de dados e organização do repositório. Nenhum Plano, Especificação, Tarefa ou linha de código pode contrariar este documento.
 
 ---
@@ -120,21 +127,36 @@ Mesmo sendo um RPG single-player offline, a segurança e a integridade de dados 
 | **Sinais (`signal`)** | `snake_case` no **passado** (ou evento claro) | `signal clue_collected(clue_id: StringName)`, `signal health_depleted` |
 | **Constantes e Valores de `enum`** | `CONSTANT_CASE` (Enums em `PascalCase`) | `const MAX_CLUES: int = 5`, `enum State { IDLE, MOVING, DODGING }` |
 
-### 4.2. Estrutura Oficial de Pastas do Repositório
+### 4.2. Estrutura Oficial de Pastas do Repositório (Spec Kit + Godot 4.x)
 
 ```text
 huntress/
 ├── AGENTS.md                  # Regras sempre ativas do agente Antigravity (Governança SDD)
 ├── README.md                  # Visão geral do projeto e índice rápido
 ├── project.godot              # Arquivo raiz do projeto Godot 4.x (quando inicializado)
-├── docs/                      # Documentação Viva & Artefatos do Ciclo SDD
-│   ├── CONSTITUICAO.md        # Etapa 1: Leis técnicas e arquiteturais do projeto
-│   ├── SDD_WORKFLOW.md        # Regras do fluxo SDD e Portões de Qualidade
+├── .agents/
+│   └── skills/                # Skills nativas do Spec Kit para o Antigravity (/speckit-*)
+├── .specify/                  # Motor oficial do GitHub Spec Kit
+│   ├── memory/
+│   │   └── constitution.md    # Constituição ativa lida automaticamente pelo Spec Kit
+│   ├── scripts/
+│   │   └── powershell/        # Scripts de automação e validação SDD (Windows PowerShell)
+│   ├── templates/             # Templates base do Spec Kit + pasta overrides/ customizada
+│   │   └── overrides/         # Templates PT-BR adaptados para Godot 4.x e Portões 1 e 2
+│   └── extensions/            # Extensões oficiais instaladas (github, assess, bug)
+├── specs/                     # Artefatos SDD agrupados por Feature (Padrão Oficial Spec Kit)
+│   └── NNN-nome-feature/      # Ex.: 001-movimentacao-cacadora/
+│       ├── spec.md            # Etapa 2 & 3: Especificação + Clarificação (🔒 Portão 1)
+│       ├── plan.md            # Etapa 4: Plano Técnico + Constitution Check
+│       ├── tasks.md           # Etapa 5 & 6: Tarefas + Análise Cruzada (🔒 Portão 2)
+│       ├── research.md        # Pesquisas técnicas/design da feature (opcional)
+│       ├── data-model.md      # Modelo de Resources/Sinais da feature (opcional)
+│       └── checklists/        # Checklists de validação de requisitos (requirements.md)
+├── docs/                      # Documentação Estratégica e de Processo do Jogo
+│   ├── CONSTITUICAO.md        # Espelho de leitura rápida da Constituição
+│   ├── SDD_WORKFLOW.md        # Regras do fluxo SDD, comandos Spec Kit e Portões de Qualidade
 │   ├── GDD.md                 # Game Design Document (Conceito, Core Loop, Mecânicas)
-│   ├── inspirations/          # Análises de jogos referência (CrossCode, The Witcher, etc.)
-│   ├── specs/                 # Etapa 2 & 3: Especificações Funcionais + Clarificações
-│   ├── plans/                 # Etapa 4: Planos Técnicos de Arquitetura
-│   └── tasks/                 # Etapa 5 & 6: Tarefas Ordenadas + Relatórios de Análise Cruzada
+│   └── inspirations/          # Análises de jogos referência (CrossCode, The Witcher, etc.)
 ├── src/                       # Código-fonte e Cenas de Produção (Godot)
 │   ├── core/                  # Autoloads restritos (SignalBus, SaveManager, GameTypes)
 │   ├── components/            # Componentes modulares reutilizáveis (Health, Hitbox, Hurtbox, Movement...)
@@ -157,20 +179,16 @@ huntress/
 ```
 
 ### 4.3. Padrão de Commits e Issues (Conventional Commits)
-Todos os commits devem ser atômicos, escritos em português ou inglês consistente (padrão recomendado: **português claro com prefixos universais**), seguindo o formato:
+Todos os commits devem ser atômicos, seguindo o formato:
 
 ```text
 <tipo>(<escopo>): <descrição curta no imperativo> (#<id-da-issue>)
 ```
 
-- **Tipos permitidos:**
-  - `docs`: Criação ou atualização de documentação SDD (`GDD`, `spec`, `plan`, `tasks`, `constituicao`).
-  - `feat`: Nova mecânica, componente ou funcionalidade aprovada no ciclo SDD.
-  - `fix`: Correção de bug em mecânica ou componente existente.
-  - `refactor`: Melhoria de código sem alterar comportamento externo (ex.: extração de componente).
-  - `test`: Adição ou ajuste de testes automatizados ou cenas *sandbox greybox*.
-  - `chore`: Configuração de projeto Godot, `.gitignore`, CI ou ferramentas MCP.
+- **Tipos permitidos:** `docs`, `feat`, `fix`, `refactor`, `test`, `chore`.
 - **Exemplos:**
-  - `docs(sdd): define constituição v1.0 e workflow de governança SDD`
-  - `docs(spec): adiciona especificação 001 de movimentação e esquiva pós-clarificação`
+  - `docs(sdd): integra github spec-kit com overrides para Godot 4.x`
+  - `docs(spec): adiciona especificacao 001 de movimentacao pos-clarificacao`
   - `feat(components): implementa HealthComponent e HurtboxComponent isolados (#3)`
+
+**Version**: 1.1.0 | **Ratified**: 2026-10-20 | **Last Amended**: 2026-10-20

@@ -1,0 +1,6 @@
+{
+  "ai": "agy",
+  "ai_skills": true,
+  "feature_numbering": "sequential",
+  "script": "ps"
+}

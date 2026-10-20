@@ -1,0 +1,13 @@
+{
+  "default_integration": "agy",
+  "installed_integrations": [
+    "agy"
+  ],
+  "integration": "agy",
+  "integration_settings": {
+    "agy": {
+      "invoke_separator": "-"
+    }
+  },
+  "integration_state_schema": 1
+}

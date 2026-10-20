@@ -16,3 +16,5 @@ dodge_duration = 0.24
 invulnerability_duration = 0.16
 dodge_cooldown = 0.35
 dodge_input_buffer_time = 0.12
+combo_input_buffer_time = 0.18
+hurt_duration = 0.22

@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3]
+[gd_scene load_steps=20 format=3]
 
 [ext_resource type="Script" path="res://src/entities/player/player.gd" id="1_player"]
 [ext_resource type="Resource" path="res://src/data/default_player_movement.tres" id="2_cfg"]
@@ -9,9 +9,20 @@
 [ext_resource type="Script" path="res://src/entities/player/states/player_idle_state.gd" id="7_idle"]
 [ext_resource type="Script" path="res://src/entities/player/states/player_move_state.gd" id="8_move"]
 [ext_resource type="Script" path="res://src/entities/player/states/player_dodge_state.gd" id="9_dodge"]
+[ext_resource type="Script" path="res://src/components/hitbox_component.gd" id="10_hitbox"]
+[ext_resource type="Script" path="res://src/components/hurtbox_component.gd" id="11_hurtbox"]
+[ext_resource type="Script" path="res://src/components/health_component.gd" id="12_health"]
+[ext_resource type="Script" path="res://src/components/combat_style_component.gd" id="13_style_comp"]
+[ext_resource type="Script" path="res://src/entities/player/states/player_attack_state.gd" id="14_attack"]
+[ext_resource type="Script" path="res://src/entities/player/states/player_hurt_state.gd" id="15_hurt"]
+[ext_resource type="Resource" path="res://src/data/style_fast_steel.tres" id="16_fast_style"]
+[ext_resource type="Resource" path="res://src/data/style_heavy_impact.tres" id="17_heavy_style"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_foot"]
 radius = 10.0
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_slash"]
+size = Vector2(26, 26)
 
 [node name="Player" type="CharacterBody2D"]
 motion_mode = 1
@@ -33,6 +44,40 @@ polygon = PackedVector2Array(-10, -14, 10, -14, 12, 0, 10, 10, -10, 10, -12, 0)
 [node name="FacingIndicator" type="Polygon2D" parent="PlayerGreyboxVisual"]
 color = Color(1, 1, 1, 1)
 polygon = PackedVector2Array(6, -5, 18, 0, 6, 5)
+
+[node name="WeaponPivot" type="Node2D" parent="."]
+
+[node name="HitboxComponent" type="Area2D" parent="WeaponPivot" node_paths=PackedStringArray("collision_shape", "slash_visual")]
+script = ExtResource("10_hitbox")
+collision_shape = NodePath("CollisionShape2D")
+slash_visual = NodePath("SlashVisual")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="WeaponPivot/HitboxComponent"]
+position = Vector2(18, 0)
+shape = SubResource("RectangleShape2D_slash")
+
+[node name="SlashVisual" type="Polygon2D" parent="WeaponPivot/HitboxComponent"]
+visible = false
+color = Color(1, 0.231373, 0.188235, 0.85)
+polygon = PackedVector2Array(5, -13, 31, -9, 35, 0, 31, 9, 5, 13)
+
+[node name="HurtboxComponent" type="Area2D" parent="." node_paths=PackedStringArray("health_component", "dodge_state")]
+script = ExtResource("11_hurtbox")
+team = 0
+health_component = NodePath("../HealthComponent")
+dodge_state = NodePath("../StateMachine/DodgeState")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="HurtboxComponent"]
+shape = SubResource("CircleShape2D_foot")
+
+[node name="HealthComponent" type="Node" parent="."]
+script = ExtResource("12_health")
+max_health = 100.0
+post_hit_invulnerability_duration = 0.6
+
+[node name="CombatStyleComponent" type="Node" parent="."]
+script = ExtResource("13_style_comp")
+available_styles = Array[Resource("res://src/data/combat_style_data.gd")]([ExtResource("16_fast_style"), ExtResource("17_heavy_style")])
 
 [node name="PlayerInputComponent" type="Node" parent="."]
 script = ExtResource("4_input")
@@ -61,6 +106,21 @@ dodge_state = NodePath("../DodgeState")
 
 [node name="DodgeState" type="Node" parent="StateMachine" node_paths=PackedStringArray("movement_component", "input_component")]
 script = ExtResource("9_dodge")
+movement_component = NodePath("../../MovementComponent")
+input_component = NodePath("../../PlayerInputComponent")
+config = ExtResource("2_cfg")
+
+[node name="AttackState" type="Node" parent="StateMachine" node_paths=PackedStringArray("movement_component", "input_component", "combat_style_component", "hitbox_component", "weapon_pivot", "dodge_state")]
+script = ExtResource("14_attack")
+movement_component = NodePath("../../MovementComponent")
+input_component = NodePath("../../PlayerInputComponent")
+combat_style_component = NodePath("../../CombatStyleComponent")
+hitbox_component = NodePath("../../WeaponPivot/HitboxComponent")
+weapon_pivot = NodePath("../../WeaponPivot")
+dodge_state = NodePath("../DodgeState")
+
+[node name="HurtState" type="Node" parent="StateMachine" node_paths=PackedStringArray("movement_component", "input_component")]
+script = ExtResource("15_hurt")
 movement_component = NodePath("../../MovementComponent")
 input_component = NodePath("../../PlayerInputComponent")
 config = ExtResource("2_cfg")

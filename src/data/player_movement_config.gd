@@ -1,7 +1,7 @@
 class_name PlayerMovementConfig
 extends Resource
 ## Custom Resource que armazena e valida todos os parâmetros @export de Game Feel
-## para a locomoção, orientação e esquiva da Caçadora (SPEC-001: RF-008, EC-003, EC-006).
+## para a locomoção, orientação, esquiva e resposta de combate da Caçadora (SPEC-001 & SPEC-002).
 
 @export_group("Locomotion (CrossCode Feel)")
 @export_range(50.0, 600.0, 5.0, "suffix:px/s") var max_speed: float = 200.0
@@ -19,21 +19,22 @@ extends Resource
 @export_range(0.0, 3.0, 0.05, "suffix:s") var dodge_cooldown: float = 0.35
 @export_range(0.0, 0.4, 0.01, "suffix:s") var dodge_input_buffer_time: float = 0.12
 
+@export_group("Combat & Hurt Timing (SPEC-002)")
+@export_range(0.05, 0.5, 0.01, "suffix:s") var combo_input_buffer_time: float = 0.18
+@export_range(0.05, 1.0, 0.01, "suffix:s") var hurt_duration: float = 0.22
 
-## Retorna a direção inicial de olhar sanitizada e normalizada (RF-004).
+
 func get_sanitized_default_facing() -> Vector2:
 	if default_facing_direction.length_squared() <= 0.0001:
 		return Vector2.DOWN
 	return default_facing_direction.normalized()
 
 
-## Retorna a duração de i-frames garantida como <= dodge_duration (RF-006).
 func get_sanitized_invulnerability_duration() -> float:
 	var valid_dodge_duration: float = maxf(dodge_duration, 0.05)
 	return clampf(invulnerability_duration, 0.0, valid_dodge_duration)
 
 
-## Sanitiza todos os limites in-place para proteção defensiva (Constituição Seção 3.3).
 func sanitize() -> void:
 	max_speed = maxf(max_speed, 1.0)
 	y_axis_speed_ratio = clampf(y_axis_speed_ratio, 0.5, 1.5)
@@ -47,3 +48,5 @@ func sanitize() -> void:
 	invulnerability_duration = get_sanitized_invulnerability_duration()
 	dodge_cooldown = maxf(dodge_cooldown, 0.0)
 	dodge_input_buffer_time = clampf(dodge_input_buffer_time, 0.0, 0.4)
+	combo_input_buffer_time = clampf(combo_input_buffer_time, 0.05, 0.5)
+	hurt_duration = clampf(hurt_duration, 0.05, 1.0)

@@ -1,18 +1,25 @@
 class_name PlayerInputComponent
 extends Node
 ## Componente dedicado à captura do InputMap da Caçadora, normalização direcional,
-## anulação de eixos opostos (EC-001), limpeza por perda de foco (EC-005) e Input Buffer da esquiva (EC-003).
+## anulação de eixos opostos (EC-001), limpeza por perda de foco (EC-005),
+## Input Buffer de esquiva/ataque (EC-003, RF-006) e atalhos de Estilo/Óleo (SPEC-001 & SPEC-002).
+
+signal style_switch_requested()
+signal oil_switch_requested()
 
 @export var config: PlayerMovementConfig
 
 var move_direction: Vector2 = Vector2.ZERO
 var _dodge_buffer_timer: float = 0.0
+var _attack_buffer_timer: float = 0.0
 var _window_focused: bool = true
 
 
 func _physics_process(delta: float) -> void:
 	if _dodge_buffer_timer > 0.0:
 		_dodge_buffer_timer = maxf(0.0, _dodge_buffer_timer - delta)
+	if _attack_buffer_timer > 0.0:
+		_attack_buffer_timer = maxf(0.0, _attack_buffer_timer - delta)
 
 	if not _window_focused:
 		move_direction = Vector2.ZERO
@@ -27,6 +34,12 @@ func _physics_process(delta: float) -> void:
 
 	if Input.is_action_just_pressed(&"dodge"):
 		register_dodge_press()
+	if InputMap.has_action(&"attack") and Input.is_action_just_pressed(&"attack"):
+		register_attack_press()
+	if InputMap.has_action(&"switch_style") and Input.is_action_just_pressed(&"switch_style"):
+		style_switch_requested.emit()
+	if InputMap.has_action(&"switch_oil") and Input.is_action_just_pressed(&"switch_oil"):
+		oil_switch_requested.emit()
 
 
 func _notification(what: int) -> void:
@@ -36,7 +49,6 @@ func _notification(what: int) -> void:
 		_window_focused = true
 
 
-## Calcula o vetor direcional normalizado anulando entradas opostas simultâneas (RF-001, EC-001, SC-001).
 static func compute_normalized_direction(
 	left: bool,
 	right: bool,
@@ -61,21 +73,17 @@ static func compute_normalized_direction(
 	return raw_vector
 
 
-## Registra uma solicitação de esquiva ativando a janela de Input Buffer (EC-003).
 func register_dodge_press() -> void:
 	var buffer_duration: float = 0.12
 	if config != null:
 		buffer_duration = config.dodge_input_buffer_time
-	# Garante pelo menos 1 frame físico de validade mesmo se o buffer for configurado como 0.0
 	_dodge_buffer_timer = maxf(buffer_duration, 0.017)
 
 
-## Retorna verdadeiro se há uma solicitação de esquiva ativa no buffer.
 func has_buffered_dodge() -> bool:
 	return _dodge_buffer_timer > 0.0
 
 
-## Consome o pedido de esquiva no buffer e retorna verdadeiro caso existisse (EC-003).
 func consume_dodge_request() -> bool:
 	if _dodge_buffer_timer > 0.0:
 		_dodge_buffer_timer = 0.0
@@ -83,13 +91,34 @@ func consume_dodge_request() -> bool:
 	return false
 
 
-## Retorna o tempo restante no Input Buffer para telemetria na Sandbox.
 func get_dodge_buffer_time_remaining() -> float:
 	return _dodge_buffer_timer
 
 
-## Trata a perda de foco da janela zerando imediatamente o vetor direcional e o buffer (EC-005).
+func register_attack_press() -> void:
+	var buffer_duration: float = 0.18
+	if config != null:
+		buffer_duration = config.combo_input_buffer_time
+	_attack_buffer_timer = maxf(buffer_duration, 0.017)
+
+
+func has_buffered_attack() -> bool:
+	return _attack_buffer_timer > 0.0
+
+
+func consume_attack_request() -> bool:
+	if _attack_buffer_timer > 0.0:
+		_attack_buffer_timer = 0.0
+		return true
+	return false
+
+
+func get_attack_buffer_time_remaining() -> float:
+	return _attack_buffer_timer
+
+
 func on_window_focus_lost() -> void:
 	_window_focused = false
 	move_direction = Vector2.ZERO
 	_dodge_buffer_timer = 0.0
+	_attack_buffer_timer = 0.0

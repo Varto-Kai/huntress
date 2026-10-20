@@ -1,24 +1,30 @@
 class_name Player
 extends CharacterBody2D
-## Entidade raiz da Caçadora (Player) montada por composição (RF-003, RF-008, DT-01, DT-02).
-## Atua exclusivamente como container que injeta PlayerMovementConfig e conecta os componentes filhos.
+## Entidade raiz da Caçadora (Player) montada por composição (SPEC-001 & SPEC-002).
+## Conecta Locomoção, Esquiva, Combate (Hitbox/Hurtbox/Health/CombatStyle) e StateMachine.
 
 @export var movement_config: PlayerMovementConfig
 
 @onready var greybox_visual: PlayerGreyboxVisual = $PlayerGreyboxVisual as PlayerGreyboxVisual
+@onready var weapon_pivot: Node2D = get_node_or_null("WeaponPivot") as Node2D
+@onready var hitbox_component: HitboxComponent = get_node_or_null("WeaponPivot/HitboxComponent") as HitboxComponent
+@onready var hurtbox_component: HurtboxComponent = get_node_or_null("HurtboxComponent") as HurtboxComponent
+@onready var health_component: HealthComponent = get_node_or_null("HealthComponent") as HealthComponent
+@onready var combat_style_component: CombatStyleComponent = get_node_or_null("CombatStyleComponent") as CombatStyleComponent
 @onready var input_component: PlayerInputComponent = $PlayerInputComponent as PlayerInputComponent
 @onready var movement_component: MovementComponent = $MovementComponent as MovementComponent
 @onready var state_machine: StateMachine = $StateMachine as StateMachine
 @onready var idle_state: PlayerIdleState = $StateMachine/IdleState as PlayerIdleState
 @onready var move_state: PlayerMoveState = $StateMachine/MoveState as PlayerMoveState
 @onready var dodge_state: PlayerDodgeState = $StateMachine/DodgeState as PlayerDodgeState
+@onready var attack_state: PlayerAttackState = get_node_or_null("StateMachine/AttackState") as PlayerAttackState
+@onready var hurt_state: PlayerHurtState = get_node_or_null("StateMachine/HurtState") as PlayerHurtState
 
 
 func _ready() -> void:
 	if movement_config == null:
 		movement_config = load("res://src/data/default_player_movement.tres") as PlayerMovementConfig
 	if movement_config != null:
-		# Duplica o Resource em runtime conforme Cláusula 3.2 da Constituição (Imutabilidade de Catálogo)
 		movement_config = movement_config.duplicate() as PlayerMovementConfig
 		movement_config.sanitize()
 
@@ -37,8 +43,60 @@ func _ready() -> void:
 	dodge_state.input_component = input_component
 	dodge_state.config = movement_config
 
+	if attack_state != null:
+		attack_state.movement_component = movement_component
+		attack_state.input_component = input_component
+		attack_state.combat_style_component = combat_style_component
+		attack_state.hitbox_component = hitbox_component
+		attack_state.weapon_pivot = weapon_pivot
+		attack_state.dodge_state = dodge_state
+
+	if hurt_state != null:
+		hurt_state.movement_component = movement_component
+		hurt_state.input_component = input_component
+		hurt_state.config = movement_config
+
+	if hurtbox_component != null:
+		hurtbox_component.team = CombatTypes.Team.PLAYER
+		hurtbox_component.health_component = health_component
+		hurtbox_component.dodge_state = dodge_state
+
+	if health_component != null:
+		if not health_component.damaged.is_connected(_on_player_damaged):
+			health_component.damaged.connect(_on_player_damaged)
+		if not health_component.health_depleted.is_connected(_on_player_health_depleted):
+			health_component.health_depleted.connect(_on_player_health_depleted)
+
+	if combat_style_component != null and input_component != null:
+		if not input_component.style_switch_requested.is_connected(_on_style_switch_requested):
+			input_component.style_switch_requested.connect(_on_style_switch_requested)
+		if not input_component.oil_switch_requested.is_connected(_on_oil_switch_requested):
+			input_component.oil_switch_requested.connect(_on_oil_switch_requested)
+
 	state_machine.initial_state = idle_state
 	state_machine.initialize()
 
 	if greybox_visual != null:
-		greybox_visual.bind_components(state_machine, movement_component, dodge_state)
+		greybox_visual.bind_components(state_machine, movement_component, dodge_state, attack_state, health_component)
+
+
+func _on_player_damaged(_amount: float, knockback_vector: Vector2, _matchup: int) -> void:
+	if hurt_state != null:
+		hurt_state.setup_knockback(knockback_vector)
+		state_machine.transition_to(&"HurtState")
+
+
+func _on_player_health_depleted() -> void:
+	# Em ambiente de validação Greybox, restaura a vida após zerar para não interromper o teste
+	if health_component != null:
+		health_component.reset_health()
+
+
+func _on_style_switch_requested() -> void:
+	if combat_style_component != null:
+		combat_style_component.cycle_style()
+
+
+func _on_oil_switch_requested() -> void:
+	if combat_style_component != null:
+		combat_style_component.cycle_oil()

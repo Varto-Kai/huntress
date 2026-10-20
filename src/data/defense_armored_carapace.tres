@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="DefenseProfileData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/defense_profile_data.gd" id="1_def"]
+
+[resource]
+script = ExtResource("1_def")
+profile_name = "Couraça Blindada (Fraco: Pesado / Ácido)"
+fast_steel_damage_mult = 0.5
+fast_steel_stagger_mult = 0.25
+heavy_impact_damage_mult = 1.5
+heavy_impact_stagger_mult = 2.0
+no_oil_damage_mult = 1.0
+no_oil_stagger_mult = 1.0
+ignis_oil_damage_mult = 0.8
+ignis_oil_stagger_mult = 0.8
+vitriol_acid_damage_mult = 1.5
+vitriol_acid_stagger_mult = 1.5
+max_stagger = 100.0
+stagger_decay_rate = 6.0
+stagger_duration = 3.2
+staggered_damage_multiplier = 1.5

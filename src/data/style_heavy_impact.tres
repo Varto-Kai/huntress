@@ -1,0 +1,41 @@
+[gd_resource type="Resource" script_class="CombatStyleData" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://src/data/combat_style_data.gd" id="1_style"]
+[ext_resource type="Script" path="res://src/data/attack_step_data.gd" id="2_step"]
+
+[sub_resource type="Resource" id="Resource_heavy1"]
+script = ExtResource("2_step")
+step_name = &"HeavyImpact1"
+windup_duration = 0.15
+active_duration = 0.11
+recovery_duration = 0.19
+damage_multiplier = 1.0
+stagger_multiplier = 1.0
+knockback_multiplier = 1.0
+attack_step_speed = 115.0
+hitbox_size = Vector2(34, 38)
+hitbox_forward_offset = 22.0
+
+[sub_resource type="Resource" id="Resource_heavy2"]
+script = ExtResource("2_step")
+step_name = &"HeavyCrush2_Finisher"
+windup_duration = 0.18
+active_duration = 0.12
+recovery_duration = 0.24
+damage_multiplier = 1.45
+stagger_multiplier = 1.6
+knockback_multiplier = 1.5
+attack_step_speed = 145.0
+hitbox_size = Vector2(40, 42)
+hitbox_forward_offset = 25.0
+
+[resource]
+script = ExtResource("1_style")
+style_name = "Postura Pesada (Quebra-Guarda 2-Hits)"
+style_type = 1
+base_damage = 24.0
+base_stagger_damage = 34.0
+base_knockback_force = 240.0
+hitstop_duration = 0.07
+slash_color = Color(1, 0.584314, 0, 0.88)
+combo_steps = Array[ExtResource("2_step")]([SubResource("Resource_heavy1"), SubResource("Resource_heavy2")])

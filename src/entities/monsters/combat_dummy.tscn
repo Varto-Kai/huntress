@@ -1,0 +1,87 @@
+[gd_scene load_steps=9 format=3]
+
+[ext_resource type="Script" path="res://src/entities/monsters/combat_dummy.gd" id="1_dummy"]
+[ext_resource type="Resource" path="res://src/data/defense_armored_carapace.tres" id="2_def"]
+[ext_resource type="Resource" path="res://src/data/default_player_movement.tres" id="3_move_cfg"]
+[ext_resource type="Script" path="res://src/components/hurtbox_component.gd" id="4_hurtbox"]
+[ext_resource type="Script" path="res://src/components/health_component.gd" id="5_health"]
+[ext_resource type="Script" path="res://src/components/stagger_component.gd" id="6_stagger"]
+[ext_resource type="Script" path="res://src/components/movement_component.gd" id="7_move_comp"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_dummy"]
+radius = 14.0
+
+[node name="CombatDummy" type="CharacterBody2D"]
+motion_mode = 1
+script = ExtResource("1_dummy")
+defense_profile = ExtResource("2_def")
+movement_config = ExtResource("3_move_cfg")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_dummy")
+
+[node name="DummyVisual" type="Polygon2D" parent="."]
+color = Color(0.556863, 0.266667, 0.678431, 1)
+polygon = PackedVector2Array(-14, -14, 14, -14, 16, 0, 14, 14, -14, 14, -16, 0)
+
+[node name="HurtboxComponent" type="Area2D" parent="." node_paths=PackedStringArray("health_component", "stagger_component")]
+script = ExtResource("4_hurtbox")
+team = 1
+health_component = NodePath("../HealthComponent")
+stagger_component = NodePath("../StaggerComponent")
+defense_profile = ExtResource("2_def")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="HurtboxComponent"]
+shape = SubResource("CircleShape2D_dummy")
+
+[node name="HealthComponent" type="Node" parent="."]
+script = ExtResource("5_health")
+max_health = 160.0
+post_hit_invulnerability_duration = 0.0
+
+[node name="StaggerComponent" type="Node" parent="."]
+script = ExtResource("6_stagger")
+defense_profile = ExtResource("2_def")
+
+[node name="MovementComponent" type="Node" parent="." node_paths=PackedStringArray("body")]
+script = ExtResource("7_move_comp")
+body = NodePath("..")
+config = ExtResource("3_move_cfg")
+
+[node name="OverheadUI" type="Node2D" parent="."]
+position = Vector2(0, -28)
+
+[node name="StatusLabel" type="Label" parent="OverheadUI"]
+offset_left = -75.0
+offset_top = -26.0
+offset_right = 75.0
+offset_bottom = -2.0
+theme_override_font_sizes/font_size = 8
+text = "Dummy Tático"
+horizontal_alignment = 1
+
+[node name="HpBarBg" type="ColorRect" parent="OverheadUI"]
+offset_left = -24.0
+offset_top = 0.0
+offset_right = 24.0
+offset_bottom = 4.0
+color = Color(0.15, 0.15, 0.18, 0.9)
+
+[node name="HpBarFill" type="ColorRect" parent="OverheadUI/HpBarBg"]
+layout_mode = 0
+offset_right = 48.0
+offset_bottom = 4.0
+color = Color(0.905882, 0.298039, 0.235294, 1)
+
+[node name="StaggerBarBg" type="ColorRect" parent="OverheadUI"]
+offset_left = -24.0
+offset_top = 5.0
+offset_right = 24.0
+offset_bottom = 8.0
+color = Color(0.15, 0.15, 0.18, 0.9)
+
+[node name="StaggerBarFill" type="ColorRect" parent="OverheadUI/StaggerBarBg"]
+layout_mode = 0
+offset_right = 0.0
+offset_bottom = 3.0
+color = Color(0.945098, 0.768627, 0.0588235, 1)

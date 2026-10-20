@@ -1,27 +1,31 @@
 extends SceneTree
-## Runner CLI para execução headless de toda a suíte de testes da SPEC-001 (T011, T015).
+## Runner CLI para execução headless de toda a suíte de testes do Projeto Huntress (SPEC-001 + SPEC-002).
 ## Uso: godot --headless --path . -s res://tests/unit/run_tests.gd
 
 
 func _init() -> void:
 	print("==================================================")
-	print("🧪 HUNTRESS SDD TEST RUNNER — SPEC-001")
+	print("🧪 HUNTRESS SDD TEST RUNNER — SPEC-001 & SPEC-002")
 	print("==================================================")
 
 	var total_passed: int = 0
 	var total_failed: int = 0
 
-	var math_suite: TestMovementMath = TestMovementMath.new()
-	var math_res: Dictionary = math_suite.run_all()
-	_print_suite_report("TestMovementMath", math_res)
-	total_passed += int(math_res["passed"])
-	total_failed += int(math_res["failed"])
+	var suites: Array[Variant] = [
+		["TestMovementMath (SPEC-001)", TestMovementMath.new()],
+		["TestPlayerStateMachine (SPEC-001)", TestPlayerStateMachine.new()],
+		["TestCombatDamageResolver (SPEC-002)", TestCombatDamageResolver.new()],
+		["TestCombatComponentsAndStates (SPEC-002)", TestCombatComponentsAndStates.new()],
+	]
 
-	var sm_suite: TestPlayerStateMachine = TestPlayerStateMachine.new()
-	var sm_res: Dictionary = sm_suite.run_all()
-	_print_suite_report("TestPlayerStateMachine", sm_res)
-	total_passed += int(sm_res["passed"])
-	total_failed += int(sm_res["failed"])
+	for entry: Variant in suites:
+		var pair: Array = entry as Array
+		var suite_name: String = String(pair[0])
+		var suite_obj: Object = pair[1] as Object
+		var res: Dictionary = suite_obj.call("run_all") as Dictionary
+		_print_suite_report(suite_name, res)
+		total_passed += int(res["passed"])
+		total_failed += int(res["failed"])
 
 	print("--------------------------------------------------")
 	print("RESUMO TOTAL: %d PASS | %d FAIL" % [total_passed, total_failed])

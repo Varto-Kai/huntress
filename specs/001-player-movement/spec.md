@@ -2,7 +2,7 @@
 
 **Diretório da Feature**: `specs/001-player-movement`  
 **Criado em**: 2026-10-20  
-**Status no Ciclo SDD**: `[x] 2. Rascunho de Especificação` | `[ ] 3. Clarificada (🔒 Portão 1 Aprovado)`  
+**Status no Ciclo SDD**: `[x] 2. Rascunho de Especificação` | `[x] 3. Clarificada (🔒 Portão 1 Aprovado)`  
 **Entrada do Usuário**: "Iniciar a SPEC-001: Movimentação Base, Esquiva e StateMachine da Caçadora (Greybox)"
 
 ---
@@ -129,4 +129,4 @@
 ### Assinatura do Portão de Qualidade 1
 - [x] Todas as ambiguidades foram eliminadas e gravadas de volta na Spec.
 - [x] A seção **Fora do Escopo (Non-Goals)** está clara e blindada.
-- [ ] **Verificado e aprovado pessoalmente pelo Desenvolvedor em:** `Aguardando aprovação final do Portão 1`
+- [x] **Verificado e aprovado pessoalmente pelo Desenvolvedor em:** `2026-10-20`

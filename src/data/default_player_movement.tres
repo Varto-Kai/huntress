@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="PlayerMovementConfig" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/player_movement_config.gd" id="1_cfg"]
+
+[resource]
+script = ExtResource("1_cfg")
+max_speed = 200.0
+y_axis_speed_ratio = 1.0
+acceleration = 1800.0
+friction = 1600.0
+default_facing_direction = Vector2(0, 1)
+dodge_speed = 460.0
+backstep_speed_multiplier = 0.75
+dodge_end_speed_factor = 0.35
+dodge_duration = 0.24
+invulnerability_duration = 0.16
+dodge_cooldown = 0.35
+dodge_input_buffer_time = 0.12

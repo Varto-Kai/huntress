@@ -1,0 +1,120 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://tests/sandboxes/sandbox_player_movement.gd" id="1_sandbox"]
+[ext_resource type="PackedScene" path="res://src/entities/player/player.tscn" id="2_player"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_horiz_wall"]
+size = Vector2(600, 16)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_vert_wall"]
+size = Vector2(16, 328)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_box_obstacle"]
+size = Vector2(56, 56)
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_pillar"]
+radius = 28.0
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_angled_wall"]
+size = Vector2(96, 18)
+
+[node name="SandboxPlayerMovement" type="Node2D"]
+script = ExtResource("1_sandbox")
+
+[node name="ArenaFloor" type="Polygon2D" parent="."]
+color = Color(0.117647, 0.137255, 0.168627, 1)
+polygon = PackedVector2Array(20, 16, 620, 16, 620, 344, 20, 344)
+
+[node name="WallsAndObstacles" type="Node2D" parent="."]
+
+[node name="NorthWall" type="StaticBody2D" parent="WallsAndObstacles"]
+position = Vector2(320, 24)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="WallsAndObstacles/NorthWall"]
+shape = SubResource("RectangleShape2D_horiz_wall")
+
+[node name="Visual" type="Polygon2D" parent="WallsAndObstacles/NorthWall"]
+color = Color(0.278431, 0.317647, 0.380392, 1)
+polygon = PackedVector2Array(-300, -8, 300, -8, 300, 8, -300, 8)
+
+[node name="SouthWall" type="StaticBody2D" parent="WallsAndObstacles"]
+position = Vector2(320, 336)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="WallsAndObstacles/SouthWall"]
+shape = SubResource("RectangleShape2D_horiz_wall")
+
+[node name="Visual" type="Polygon2D" parent="WallsAndObstacles/SouthWall"]
+color = Color(0.278431, 0.317647, 0.380392, 1)
+polygon = PackedVector2Array(-300, -8, 300, -8, 300, 8, -300, 8)
+
+[node name="WestWall" type="StaticBody2D" parent="WallsAndObstacles"]
+position = Vector2(28, 180)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="WallsAndObstacles/WestWall"]
+shape = SubResource("RectangleShape2D_vert_wall")
+
+[node name="Visual" type="Polygon2D" parent="WallsAndObstacles/WestWall"]
+color = Color(0.278431, 0.317647, 0.380392, 1)
+polygon = PackedVector2Array(-8, -164, 8, -164, 8, 164, -8, 164)
+
+[node name="EastWall" type="StaticBody2D" parent="WallsAndObstacles"]
+position = Vector2(612, 180)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="WallsAndObstacles/EastWall"]
+shape = SubResource("RectangleShape2D_vert_wall")
+
+[node name="Visual" type="Polygon2D" parent="WallsAndObstacles/EastWall"]
+color = Color(0.278431, 0.317647, 0.380392, 1)
+polygon = PackedVector2Array(-8, -164, 8, -164, 8, 164, -8, 164)
+
+[node name="SquarePillar90Deg" type="StaticBody2D" parent="WallsAndObstacles"]
+position = Vector2(200, 210)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="WallsAndObstacles/SquarePillar90Deg"]
+shape = SubResource("RectangleShape2D_box_obstacle")
+
+[node name="Visual" type="Polygon2D" parent="WallsAndObstacles/SquarePillar90Deg"]
+color = Color(0.364706, 0.427451, 0.494118, 1)
+polygon = PackedVector2Array(-28, -28, 28, -28, 28, 28, -28, 28)
+
+[node name="RoundPillar" type="StaticBody2D" parent="WallsAndObstacles"]
+position = Vector2(450, 140)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="WallsAndObstacles/RoundPillar"]
+shape = SubResource("CircleShape2D_pillar")
+
+[node name="Visual" type="Polygon2D" parent="WallsAndObstacles/RoundPillar"]
+color = Color(0.364706, 0.427451, 0.494118, 1)
+polygon = PackedVector2Array(0, -28, 20, -20, 28, 0, 20, 20, 0, 28, -20, 20, -28, 0, -20, -20)
+
+[node name="AngledWall45Deg" type="StaticBody2D" parent="WallsAndObstacles"]
+position = Vector2(440, 255)
+rotation = 0.785398
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="WallsAndObstacles/AngledWall45Deg"]
+shape = SubResource("RectangleShape2D_angled_wall")
+
+[node name="Visual" type="Polygon2D" parent="WallsAndObstacles/AngledWall45Deg"]
+color = Color(0.364706, 0.427451, 0.494118, 1)
+polygon = PackedVector2Array(-48, -9, 48, -9, 48, 9, -48, 9)
+
+[node name="Player" parent="." instance=ExtResource("2_player")]
+position = Vector2(320, 190)
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="TelemetryPanel" type="ColorRect" parent="CanvasLayer"]
+offset_left = 40.0
+offset_top = 36.0
+offset_right = 420.0
+offset_bottom = 148.0
+color = Color(0.05, 0.06, 0.08, 0.82)
+
+[node name="TelemetryLabel" type="Label" parent="CanvasLayer/TelemetryPanel"]
+layout_mode = 0
+offset_left = 8.0
+offset_top = 6.0
+offset_right = 374.0
+offset_bottom = 108.0
+theme_override_font_sizes/font_size = 9
+text = "Inicializando telemetria SPEC-001..."

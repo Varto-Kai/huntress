@@ -12,7 +12,7 @@
 
 ## Completude dos Requisitos
 
-- [x] Nenhum marcador `[NEEDS CLARIFICATION]` pendente (3 pontos aguardando Portão de Qualidade 1)
+- [x] Nenhum marcador `[NEEDS CLARIFICATION]` pendente (4 pontos clarificados e gravados no Portão de Qualidade 1)
 - [x] Requisitos são testáveis e numerados (`RF-001` a `RF-010`)
 - [x] Critérios de sucesso são mensuráveis (`SC-001` a `SC-004`)
 - [x] Critérios de sucesso são agnósticos de implementação interna
@@ -24,8 +24,8 @@
 
 - [x] Todos os requisitos funcionais possuem critérios claros de verificação
 - [x] Cenários de usuário cobrem os fluxos primários (Locomoção, Esquiva, Leitura Greybox)
-- [ ] Portão de Qualidade 1 (Clarificação) aprovado pessoalmente pelo Desenvolvedor
+- [x] Portão de Qualidade 1 (Clarificação) aprovado pessoalmente pelo Desenvolvedor (2026-10-20)
 
 ## Notas
 
-- Os itens desmarcados exigem a conclusão da **Etapa 3: Clarificação (🔒 Portão de Qualidade 1)** antes de executar `/speckit-plan`.
+- **Portão de Qualidade 1 (Clarificação) concluído e aprovado em 2026-10-20.** Pronto para a Etapa 4 (`/speckit-plan`).

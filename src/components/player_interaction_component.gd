@@ -1,21 +1,26 @@
 class_name PlayerInteractionComponent
 extends Area2D
-## Componente Area2D acoplado à Caçadora para detecção de pistas em alcance,
-## seleção determinística da pista não inspecionada mais próxima (EC-001),
-## canalização curta cancelável (Q2 / RF-002) e validação de estado (EC-003 / EC-004).
+## Componente Area2D acoplado à Caçadora para detecção de pistas (InteractableClue),
+## reagentes (InteractableReagent) e fogueiras (InteractableCampfire) em alcance (SPEC-003 & SPEC-004).
 
 signal focused_clue_changed(clue: InteractableClue)
 signal inspection_started(clue: InteractableClue, duration: float)
 signal inspection_progress_changed(clue: InteractableClue, ratio: float)
 signal inspection_cancelled(clue: InteractableClue)
 signal clue_inspection_completed(clue_data: ClueData)
+signal reagent_collected_from_world(reagent_data: ReagentData, amount: int)
+signal campfire_interacted(campfire: InteractableCampfire)
 
 @export_range(16.0, 120.0, 2.0, "suffix:px") var interaction_radius: float = 44.0
 
 var state_machine: StateMachine
 var input_component: PlayerInputComponent
 var focused_clue: InteractableClue = null
+var focused_reagent: InteractableReagent = null
+var focused_campfire: InteractableCampfire = null
 var _overlapping_clues: Array[InteractableClue] = []
+var _overlapping_reagents: Array[InteractableReagent] = []
+var _overlapping_campfires: Array[InteractableCampfire] = []
 var _inspecting_clue: InteractableClue = null
 var _inspect_elapsed: float = 0.0
 var _inspect_target_duration: float = 0.0
@@ -38,7 +43,7 @@ func _ready() -> void:
 
 
 func _physics_process(delta: float) -> void:
-	_refresh_focused_clue()
+	_refresh_focused_targets()
 
 	if _inspecting_clue != null:
 		if not _can_remain_inspecting():
@@ -59,7 +64,22 @@ func _physics_process(delta: float) -> void:
 func try_start_interaction() -> bool:
 	if not is_in_allowed_interaction_state():
 		return false
-	_refresh_focused_clue()
+	_refresh_focused_targets()
+
+	if focused_reagent != null and not focused_reagent.is_collected:
+		var res: Dictionary = focused_reagent.collect_reagent()
+		_refresh_focused_targets()
+		if bool(res.get("collected", false)):
+			var r_data: ReagentData = res.get("reagent", null) as ReagentData
+			var amt: int = int(res.get("amount", 1))
+			reagent_collected_from_world.emit(r_data, amt)
+			return true
+
+	if focused_campfire != null and (focused_clue == null or focused_clue.is_inspected):
+		focused_campfire.activate_campfire()
+		campfire_interacted.emit(focused_campfire)
+		return true
+
 	if focused_clue == null:
 		return false
 
@@ -100,7 +120,6 @@ func is_in_allowed_interaction_state() -> bool:
 	return state_name == &"IdleState" or state_name == &"MoveState"
 
 
-## Função pura e determinística para seleção da melhor pista em alcance (EC-001).
 static func select_best_clue(origin: Vector2, candidates: Array[InteractableClue]) -> InteractableClue:
 	var best_uninspected: InteractableClue = null
 	var best_uninspected_dist_sq: float = INF
@@ -111,33 +130,28 @@ static func select_best_clue(origin: Vector2, candidates: Array[InteractableClue
 		if clue == null or not is_instance_valid(clue):
 			continue
 		var dist_sq: float = origin.distance_squared_to(clue.global_position)
-		if not clue.is_inspected:
-			if dist_sq < best_uninspected_dist_sq:
-				best_uninspected_dist_sq = dist_sq
-				best_uninspected = clue
+		if not clue.is_inspected and dist_sq < best_uninspected_dist_sq:
+			best_uninspected_dist_sq = dist_sq
+			best_uninspected = clue
 		if dist_sq < best_any_dist_sq:
 			best_any_dist_sq = dist_sq
 			best_any = clue
 
-	if best_uninspected != null:
-		return best_uninspected
-	return best_any
+	return best_uninspected if best_uninspected != null else best_any
 
 
-func register_candidate_for_test(clue: InteractableClue) -> void:
-	_on_area_entered(clue)
+func register_candidate_for_test(area: Area2D) -> void:
+	_on_area_entered(area)
 
 
-func unregister_candidate_for_test(clue: InteractableClue) -> void:
-	_on_area_exited(clue)
+func unregister_candidate_for_test(area: Area2D) -> void:
+	_on_area_exited(area)
 
 
 func _can_remain_inspecting() -> bool:
 	if _inspecting_clue == null or not is_instance_valid(_inspecting_clue):
 		return false
-	if _inspecting_clue != focused_clue:
-		return false
-	if not is_in_allowed_interaction_state():
+	if _inspecting_clue != focused_clue or not is_in_allowed_interaction_state():
 		return false
 	if input_component != null and input_component.move_direction.length_squared() > 0.01:
 		return false
@@ -152,34 +166,69 @@ func _finish_inspection() -> void:
 	_inspect_elapsed = 0.0
 	_inspect_target_duration = 0.0
 	var data: ClueData = target.complete_inspection()
-	_refresh_focused_clue()
+	_refresh_focused_targets()
 	if data != null:
 		clue_inspection_completed.emit(data)
 
 
-func _refresh_focused_clue() -> void:
-	var best: InteractableClue = select_best_clue(global_position, _overlapping_clues)
-	if best == focused_clue:
-		return
-	if focused_clue != null and is_instance_valid(focused_clue):
-		focused_clue.set_focused(false)
-	focused_clue = best
-	if focused_clue != null and is_instance_valid(focused_clue):
-		focused_clue.set_focused(true)
-	focused_clue_changed.emit(focused_clue)
+func _refresh_focused_targets() -> void:
+	var best_clue: InteractableClue = select_best_clue(global_position, _overlapping_clues)
+	if best_clue != focused_clue:
+		if focused_clue != null and is_instance_valid(focused_clue):
+			focused_clue.set_focused(false)
+		focused_clue = best_clue
+		if focused_clue != null and is_instance_valid(focused_clue):
+			focused_clue.set_focused(true)
+		focused_clue_changed.emit(focused_clue)
+
+	var best_reagent: InteractableReagent = null
+	var best_r_dist: float = INF
+	for r: InteractableReagent in _overlapping_reagents:
+		if r != null and is_instance_valid(r) and not r.is_collected:
+			var d: float = global_position.distance_squared_to(r.global_position)
+			if d < best_r_dist:
+				best_r_dist = d
+				best_reagent = r
+	if best_reagent != focused_reagent:
+		if focused_reagent != null and is_instance_valid(focused_reagent):
+			focused_reagent.set_focused(false)
+		focused_reagent = best_reagent
+		if focused_reagent != null and is_instance_valid(focused_reagent):
+			focused_reagent.set_focused(true)
+
+	var best_fire: InteractableCampfire = null
+	var best_f_dist: float = INF
+	for c: InteractableCampfire in _overlapping_campfires:
+		if c != null and is_instance_valid(c):
+			var d: float = global_position.distance_squared_to(c.global_position)
+			if d < best_f_dist:
+				best_f_dist = d
+				best_fire = c
+	if best_fire != focused_campfire:
+		if focused_campfire != null and is_instance_valid(focused_campfire):
+			focused_campfire.set_focused(false)
+		focused_campfire = best_fire
+		if focused_campfire != null and is_instance_valid(focused_campfire):
+			focused_campfire.set_focused(true)
 
 
 func _on_area_entered(area: Area2D) -> void:
-	var clue: InteractableClue = area as InteractableClue
-	if clue != null and not _overlapping_clues.has(clue):
-		_overlapping_clues.append(clue)
-		_refresh_focused_clue()
+	if area is InteractableClue and not _overlapping_clues.has(area as InteractableClue):
+		_overlapping_clues.append(area as InteractableClue)
+	elif area is InteractableReagent and not _overlapping_reagents.has(area as InteractableReagent):
+		_overlapping_reagents.append(area as InteractableReagent)
+	elif area is InteractableCampfire and not _overlapping_campfires.has(area as InteractableCampfire):
+		_overlapping_campfires.append(area as InteractableCampfire)
+	_refresh_focused_targets()
 
 
 func _on_area_exited(area: Area2D) -> void:
-	var clue: InteractableClue = area as InteractableClue
-	if clue != null and _overlapping_clues.has(clue):
-		_overlapping_clues.erase(clue)
-		if _inspecting_clue == clue:
+	if area is InteractableClue and _overlapping_clues.has(area as InteractableClue):
+		_overlapping_clues.erase(area as InteractableClue)
+		if _inspecting_clue == area:
 			cancel_active_inspection()
-		_refresh_focused_clue()
+	elif area is InteractableReagent and _overlapping_reagents.has(area as InteractableReagent):
+		_overlapping_reagents.erase(area as InteractableReagent)
+	elif area is InteractableCampfire and _overlapping_campfires.has(area as InteractableCampfire):
+		_overlapping_campfires.erase(area as InteractableCampfire)
+	_refresh_focused_targets()

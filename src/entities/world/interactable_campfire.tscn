@@ -1,0 +1,45 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://src/entities/world/interactable_campfire.gd" id="1_campfire"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_campfire"]
+radius = 24.0
+
+[node name="InteractableCampfire" type="Area2D"]
+collision_layer = 8
+collision_mask = 0
+monitoring = false
+script = ExtResource("1_campfire")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_campfire")
+
+[node name="CampfireBaseVisual" type="Polygon2D" parent="."]
+color = Color(0.498039, 0.54902, 0.552941, 1)
+polygon = PackedVector2Array(-18, -8, -8, -18, 8, -18, 18, -8, 18, 8, 8, 18, -8, 18, -18, 8)
+
+[node name="FlameVisual" type="Polygon2D" parent="."]
+color = Color(0.901961, 0.494118, 0.133333, 1)
+polygon = PackedVector2Array(0, -14, 9, -2, 6, 10, -6, 10, -9, -2)
+
+[node name="PromptBg" type="ColorRect" parent="."]
+visible = false
+z_index = 24
+offset_left = -98.0
+offset_top = -42.0
+offset_right = 98.0
+offset_bottom = -24.0
+color = Color(0.04, 0.06, 0.09, 0.92)
+
+[node name="PromptLabel" type="Label" parent="."]
+visible = false
+z_index = 25
+offset_left = -96.0
+offset_top = -41.0
+offset_right = 96.0
+offset_bottom = -25.0
+theme_override_font_sizes/font_size = 8
+text = "[E] Fogueira (Grimório & Bancada)"
+horizontal_alignment = 1
+vertical_alignment = 1
+clip_text = true

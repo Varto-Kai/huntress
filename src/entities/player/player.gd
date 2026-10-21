@@ -1,7 +1,7 @@
 class_name Player
 extends CharacterBody2D
-## Entidade raiz da Caçadora (Player) montada por composição (SPEC-001, SPEC-002 & SPEC-003).
-## Conecta Locomoção, Esquiva, Combate, Investigação (PlayerInteractionComponent) e Grimório (GrimoireComponent).
+## Entidade raiz da Caçadora (Player) montada por composição (SPEC-001, SPEC-002, SPEC-003 & SPEC-004).
+## Conecta Locomoção, Esquiva, Combate, Investigação, Grimório e Inventário/Alquimia.
 
 @export var movement_config: PlayerMovementConfig
 
@@ -11,6 +11,7 @@ extends CharacterBody2D
 @onready var hurtbox_component: HurtboxComponent = get_node_or_null("HurtboxComponent") as HurtboxComponent
 @onready var interaction_component: PlayerInteractionComponent = get_node_or_null("PlayerInteractionComponent") as PlayerInteractionComponent
 @onready var grimoire_component: GrimoireComponent = get_node_or_null("GrimoireComponent") as GrimoireComponent
+@onready var inventory_component: InventoryComponent = get_node_or_null("InventoryComponent") as InventoryComponent
 @onready var health_component: HealthComponent = get_node_or_null("HealthComponent") as HealthComponent
 @onready var combat_style_component: CombatStyleComponent = get_node_or_null("CombatStyleComponent") as CombatStyleComponent
 @onready var input_component: PlayerInputComponent = $PlayerInputComponent as PlayerInputComponent
@@ -70,6 +71,8 @@ func _ready() -> void:
 			input_component.interact_pressed.connect(_on_interact_pressed)
 		if grimoire_component != null and not interaction_component.clue_inspection_completed.is_connected(grimoire_component.register_clue_from_world):
 			interaction_component.clue_inspection_completed.connect(grimoire_component.register_clue_from_world)
+		if inventory_component != null and not interaction_component.reagent_collected_from_world.is_connected(inventory_component.collect_reagent_from_world):
+			interaction_component.reagent_collected_from_world.connect(inventory_component.collect_reagent_from_world)
 
 	if health_component != null:
 		if not health_component.damaged.is_connected(_on_player_damaged):
@@ -77,11 +80,17 @@ func _ready() -> void:
 		if not health_component.health_depleted.is_connected(_on_player_health_depleted):
 			health_component.health_depleted.connect(_on_player_health_depleted)
 
-	if combat_style_component != null and input_component != null:
-		if not input_component.style_switch_requested.is_connected(_on_style_switch_requested):
-			input_component.style_switch_requested.connect(_on_style_switch_requested)
-		if not input_component.oil_switch_requested.is_connected(_on_oil_switch_requested):
-			input_component.oil_switch_requested.connect(_on_oil_switch_requested)
+	if combat_style_component != null:
+		if inventory_component != null:
+			combat_style_component.bind_inventory(inventory_component)
+		if input_component != null:
+			if not input_component.style_switch_requested.is_connected(_on_style_switch_requested):
+				input_component.style_switch_requested.connect(_on_style_switch_requested)
+			if not input_component.oil_switch_requested.is_connected(_on_oil_switch_requested):
+				input_component.oil_switch_requested.connect(_on_oil_switch_requested)
+
+	if hitbox_component != null and not hitbox_component.hit_landed.is_connected(_on_attack_hit_landed):
+		hitbox_component.hit_landed.connect(_on_attack_hit_landed)
 
 	state_machine.initial_state = idle_state
 	state_machine.initialize()
@@ -116,3 +125,8 @@ func _on_style_switch_requested() -> void:
 func _on_oil_switch_requested() -> void:
 	if combat_style_component != null:
 		combat_style_component.cycle_oil()
+
+
+func _on_attack_hit_landed(_hurtbox: HurtboxComponent, _resolution: Dictionary) -> void:
+	if combat_style_component != null:
+		combat_style_component.notify_hit_landed()

@@ -50,9 +50,11 @@ flowchart LR
    - A Caçadora explora zonas interconectadas (clareiras, ruínas, cavernas, arredores da vila) examinando vestígios deixados pela criatura: pegadas, carcaças, marcas de garras, secreções ou testemunhos.
    - **Pistas Falsas (*Red Herrings*) & Dedução Ativa:** O cenário também contém vestígios enganosos (de predadores menores, bandidos ou eventos naturais). Se o jogador desatento não analisar as descrições no Grimório e não descartar manualmente as pistas falsas, ele pode concluir a fraqueza errada e desperdiçar materiais escassos na fase de Preparação.
 2. **Preparação & Alquimia de Óleos:**
-   - Ao inspecionar pistas e filtrar vestígios falsos, o **Grimório** sintetiza a identidade, as vulnerabilidades do monstro alvo e a **fórmula alquímica do Óleo eficaz**.
-   - **Óleos Fabricáveis com Materiais:** Diferente de um simples seletor infinito, os Óleos (`IGNIS_OIL`, `VITRIOL_ACID`, etc.) exigem coleta/consumo de reagentes e materiais para serem sintetizados.
-   - Em pontos seguros (fogueiras/acampamentos ou antes do covil), o jogador configura sua *Build de Caça*: escolhe **Estilos de Luta** (ex.: Postura Rápida/Corte vs. Postura Pesada/Quebra-Guarda), fabrica os **Óleos** necessários e equipa **Ferramentas** específicas para explorar a fraqueza descoberta.
+   - Ao inspecionar pistas e filtrar vestígios falsos, o **Grimório** apresenta as evidências coletadas e as fórmulas alquímicas catalogadas.
+   - **Bancada Anexada ao Grimório (Lado a Lado):** Em pontos seguros (Fogueiras / Acampamentos), a interface de Preparação abre **lado a lado com o Grimório**. A bancada não entrega respostas mastigadas nem destaca automaticamente qual óleo usar: o jogador lê suas anotações e pistas de um lado e assume a responsabilidade de cruzar as evidências para escolher qual receita sintetizar do outro.
+   - **Óleos Fabricáveis com Materiais:** Diferente de um simples seletor infinito, os Óleos (`IGNIS_OIL`, `VITRIOL_ACID`, etc.) exigem coleta e consumo de reagentes e materiais para serem sintetizados, configurando sua *Build de Caça* (Postura + Óleo revestido na lâmina).
+   - **Descanso na Fogueira & Adaptação Silenciosa da Presa (*Hidden Prey Adaptation*):** Se a Caçadora errar a dedução (gastando reagentes no Óleo errado) ou precisar se recuperar, ela pode **Descansar na Fogueira** para restaurar a vida e reabastecer os reagentes da região. Porém, cada descanso passa o tempo e faz com que os monstros da região **se adaptem silenciosamente nos bastidores** (sem avisos explícitos de UI): a presa fica mais agressiva/rápida, aumenta sua resiliência de postura (*Stagger*) e pune ainda mais golpes improvisados (Neutros/Resistidos), tornando o uso da Fraqueza Verdadeira (Postura + Óleo corretos) ainda mais vital.
+   - **Evolução Futura Reservada (Mini-Puzzle de Alquimia estilo *Potion Permit*):** Em iterações futuras (pós-MVP), o processo de síntese na bancada poderá evoluir para um mini-puzzle espacial estilo *Potion Permit* (encaixar os blocos geométricos de cada reagente coletado dentro da matriz da receita).
 3. **Infiltração:**
    - O caminho até o covil testa as ferramentas escolhidas em micro-desafios: pequenos puzzles ambientais (ex.: queimar teias densas, usar isca ou iluminação) e escaramuças contra monstros menores que introduzem parte da linguagem visual dos ataques do Boss.
 4. **Confronto:**
@@ -85,6 +87,10 @@ Para orientar nossas Especificações futuras, extraímos de cada jogo referênc
 - **O que absorver:**
   - **Compromisso nos Golpes e Leitura de *Tells*:** O Boss anuncia seus ataques com sinais visuais e sonoros claros (*telegraphs*) antes do impacto.
   - **Parry / Contramedida de Precisão (*Unsighted*):** Recompensar o tempo de reação e o uso da ferramenta certa no momento em que o monstro executa seu golpe assinatura.
+
+### 4.4. *Potion Permit* (MassHive Media) — *[Ideia Guardada no Backlog de Evolução Alquímica]*
+- **O que absorver futuramente (Pós-Fatia Vertical):**
+  - **Mini-Puzzles Espaciais de Síntese Alquímica:** Cada reagente coletado no mapa possui um formato geométrico próprio (estilo *tetrominó* / blocos alquímicos). Na bancada, para sintetizar um Óleo ou Poção avançada, o jogador encaixa as peças dos reagentes escolhidos para preencher o molde da fórmula — tornando o próprio ato de misturar ingredientes um quebra-cabeça tático tangível.
 
 ---
 

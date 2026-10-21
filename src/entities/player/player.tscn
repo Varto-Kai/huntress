@@ -1,4 +1,4 @@
-[gd_scene load_steps=23 format=3]
+[gd_scene load_steps=24 format=3]
 
 [ext_resource type="Script" path="res://src/entities/player/player.gd" id="1_player"]
 [ext_resource type="Resource" path="res://src/data/default_player_movement.tres" id="2_cfg"]
@@ -19,6 +19,7 @@
 [ext_resource type="Resource" path="res://src/data/style_heavy_impact.tres" id="17_heavy_style"]
 [ext_resource type="Script" path="res://src/components/player_interaction_component.gd" id="18_interact"]
 [ext_resource type="Script" path="res://src/components/grimoire_component.gd" id="19_grimoire"]
+[ext_resource type="Script" path="res://src/components/inventory_component.gd" id="20_inventory"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_foot"]
 radius = 10.0
@@ -86,6 +87,9 @@ shape = SubResource("CircleShape2D_interact")
 
 [node name="GrimoireComponent" type="Node" parent="."]
 script = ExtResource("19_grimoire")
+
+[node name="InventoryComponent" type="Node" parent="."]
+script = ExtResource("20_inventory")
 
 [node name="HealthComponent" type="Node" parent="."]
 script = ExtResource("12_health")

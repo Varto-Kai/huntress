@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="ReagentData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/reagent_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+reagent_id = &"corrosive_bile"
+display_name = "Bile Corrosiva"
+description = "Secreção orgânica ácida capaz de dissolver carapaças calcificadas."
+max_stack = 10
+greybox_color = Color(0.180392, 0.8, 0.443137, 1)

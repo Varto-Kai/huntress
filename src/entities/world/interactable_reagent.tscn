@@ -1,0 +1,41 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://src/entities/world/interactable_reagent.gd" id="1_reagent"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_reagent"]
+radius = 16.0
+
+[node name="InteractableReagent" type="Area2D"]
+collision_layer = 8
+collision_mask = 0
+monitoring = false
+script = ExtResource("1_reagent")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_reagent")
+
+[node name="ReagentVisual" type="Polygon2D" parent="."]
+color = Color(0.180392, 0.8, 0.443137, 1)
+polygon = PackedVector2Array(0, -10, 9, 0, 0, 10, -9, 0)
+
+[node name="PromptBg" type="ColorRect" parent="."]
+visible = false
+z_index = 24
+offset_left = -84.0
+offset_top = -36.0
+offset_right = 84.0
+offset_bottom = -18.0
+color = Color(0.04, 0.06, 0.09, 0.92)
+
+[node name="PromptLabel" type="Label" parent="."]
+visible = false
+z_index = 25
+offset_left = -82.0
+offset_top = -35.0
+offset_right = 82.0
+offset_bottom = -19.0
+theme_override_font_sizes/font_size = 8
+text = "[E] Coletar Reagente"
+horizontal_alignment = 1
+vertical_alignment = 1
+clip_text = true

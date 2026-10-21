@@ -15,5 +15,5 @@ is_false_lead = false
 concluded_style_weakness = 1
 concluded_style_resistance = 0
 concluded_element_weakness = 2
-concluded_oil_recipe = "Ácido de Vitríolo (Fabricação: 1x Bile Corrosiva + 1x Pó de Enxofre)"
+concluded_oil_recipe = "Vitríolo Ácido (1x Base Alquímica Pura + 1x Bile Corrosiva + 1x Pó de Enxofre)"
 concluded_behavior_hint = ""

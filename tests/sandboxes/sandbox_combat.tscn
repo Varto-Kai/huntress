@@ -1,12 +1,11 @@
-[gd_scene load_steps=11 format=3]
+[gd_scene format=3 uid="uid://cbjkybg67s7lo"]
 
-[ext_resource type="Script" path="res://tests/sandboxes/sandbox_combat.gd" id="1_sandbox"]
+[ext_resource type="Script" uid="uid://cqnylhmyg6lc2" path="res://tests/sandboxes/sandbox_combat.gd" id="1_sandbox"]
 [ext_resource type="PackedScene" path="res://src/entities/player/player.tscn" id="2_player"]
 [ext_resource type="PackedScene" path="res://src/entities/monsters/combat_dummy.tscn" id="3_dummy"]
-[ext_resource type="Resource" path="res://src/data/defense_armored_carapace.tres" id="4_def_armored"]
 [ext_resource type="Resource" path="res://src/data/defense_agile_beast.tres" id="5_def_agile"]
-[ext_resource type="Script" path="res://src/entities/monsters/hazard_pulse_emitter.gd" id="6_emitter"]
-[ext_resource type="Script" path="res://src/components/hitbox_component.gd" id="7_hitbox"]
+[ext_resource type="Script" uid="uid://ongt57odc6tx" path="res://src/entities/monsters/hazard_pulse_emitter.gd" id="6_emitter"]
+[ext_resource type="Script" uid="uid://c7axmsklny8sh" path="res://src/components/hitbox_component.gd" id="7_hitbox"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_horiz_wall"]
 size = Vector2(600, 16)
@@ -17,81 +16,80 @@ size = Vector2(16, 328)
 [sub_resource type="CircleShape2D" id="CircleShape2D_pulse"]
 radius = 42.0
 
-[node name="SandboxCombat" type="Node2D"]
+[node name="SandboxCombat" type="Node2D" unique_id=186395370]
 script = ExtResource("1_sandbox")
 
-[node name="ArenaFloor" type="Polygon2D" parent="."]
+[node name="ArenaFloor" type="Polygon2D" parent="." unique_id=641041155]
 color = Color(0.117647, 0.137255, 0.168627, 1)
 polygon = PackedVector2Array(20, 16, 620, 16, 620, 344, 20, 344)
 
-[node name="Walls" type="Node2D" parent="."]
+[node name="Walls" type="Node2D" parent="." unique_id=1576984108]
 
-[node name="NorthWall" type="StaticBody2D" parent="Walls"]
+[node name="NorthWall" type="StaticBody2D" parent="Walls" unique_id=1360522406]
 position = Vector2(320, 24)
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Walls/NorthWall"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Walls/NorthWall" unique_id=1985127787]
 shape = SubResource("RectangleShape2D_horiz_wall")
 
-[node name="Visual" type="Polygon2D" parent="Walls/NorthWall"]
+[node name="Visual" type="Polygon2D" parent="Walls/NorthWall" unique_id=426613155]
 color = Color(0.278431, 0.317647, 0.380392, 1)
 polygon = PackedVector2Array(-300, -8, 300, -8, 300, 8, -300, 8)
 
-[node name="SouthWall" type="StaticBody2D" parent="Walls"]
+[node name="SouthWall" type="StaticBody2D" parent="Walls" unique_id=17053648]
 position = Vector2(320, 336)
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Walls/SouthWall"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Walls/SouthWall" unique_id=2023687360]
 shape = SubResource("RectangleShape2D_horiz_wall")
 
-[node name="Visual" type="Polygon2D" parent="Walls/SouthWall"]
+[node name="Visual" type="Polygon2D" parent="Walls/SouthWall" unique_id=2021526506]
 color = Color(0.278431, 0.317647, 0.380392, 1)
 polygon = PackedVector2Array(-300, -8, 300, -8, 300, 8, -300, 8)
 
-[node name="WestWall" type="StaticBody2D" parent="Walls"]
+[node name="WestWall" type="StaticBody2D" parent="Walls" unique_id=327508335]
 position = Vector2(28, 180)
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Walls/WestWall"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Walls/WestWall" unique_id=1987995477]
 shape = SubResource("RectangleShape2D_vert_wall")
 
-[node name="Visual" type="Polygon2D" parent="Walls/WestWall"]
+[node name="Visual" type="Polygon2D" parent="Walls/WestWall" unique_id=1187534387]
 color = Color(0.278431, 0.317647, 0.380392, 1)
 polygon = PackedVector2Array(-8, -164, 8, -164, 8, 164, -8, 164)
 
-[node name="EastWall" type="StaticBody2D" parent="Walls"]
+[node name="EastWall" type="StaticBody2D" parent="Walls" unique_id=413314454]
 position = Vector2(612, 180)
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Walls/EastWall"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Walls/EastWall" unique_id=117526161]
 shape = SubResource("RectangleShape2D_vert_wall")
 
-[node name="Visual" type="Polygon2D" parent="Walls/EastWall"]
+[node name="Visual" type="Polygon2D" parent="Walls/EastWall" unique_id=1999794200]
 color = Color(0.278431, 0.317647, 0.380392, 1)
 polygon = PackedVector2Array(-8, -164, 8, -164, 8, 164, -8, 164)
 
-[node name="ArmoredDummy" parent="." instance=ExtResource("3_dummy")]
+[node name="ArmoredDummy" parent="." unique_id=429796263 instance=ExtResource("3_dummy")]
 position = Vector2(180, 215)
 dummy_title = "Golem Couraçado (Fraco: Pesado+Ácido)"
-defense_profile = ExtResource("4_def_armored")
 base_color = Color(0.364706, 0.427451, 0.494118, 1)
 
-[node name="AgileDummy" parent="." instance=ExtResource("3_dummy")]
+[node name="AgileDummy" parent="." unique_id=1050145876 instance=ExtResource("3_dummy")]
 position = Vector2(460, 215)
 dummy_title = "Fera Ágil (Fraco: Rápido+Fogo)"
 defense_profile = ExtResource("5_def_agile")
 base_color = Color(0.607843, 0.34902, 0.713726, 1)
 
-[node name="HazardPulseEmitter" type="Node2D" parent="."]
+[node name="HazardPulseEmitter" type="Node2D" parent="." unique_id=195132898]
 position = Vector2(320, 285)
 script = ExtResource("6_emitter")
 
-[node name="TelegraphRing" type="Polygon2D" parent="HazardPulseEmitter"]
+[node name="TelegraphRing" type="Polygon2D" parent="HazardPulseEmitter" unique_id=1330049202]
 visible = false
 color = Color(1, 0.75, 0, 0.35)
 polygon = PackedVector2Array(0, -42, 30, -30, 42, 0, 30, 30, 0, 42, -30, 30, -42, 0, -30, -30)
 
-[node name="CorePolygon" type="Polygon2D" parent="HazardPulseEmitter"]
+[node name="CorePolygon" type="Polygon2D" parent="HazardPulseEmitter" unique_id=1393321674]
 color = Color(0.498039, 0.54902, 0.552941, 1)
 polygon = PackedVector2Array(-10, -10, 10, -10, 10, 10, -10, 10)
 
-[node name="EmitterLabel" type="Label" parent="HazardPulseEmitter"]
+[node name="EmitterLabel" type="Label" parent="HazardPulseEmitter" unique_id=244961481]
 offset_left = -80.0
 offset_top = 12.0
 offset_right = 80.0
@@ -100,26 +98,26 @@ theme_override_font_sizes/font_size = 8
 text = "Totem de Perigo (Teste i-frames/Hurt)"
 horizontal_alignment = 1
 
-[node name="HitboxComponent" type="Area2D" parent="HazardPulseEmitter" node_paths=PackedStringArray("collision_shape")]
+[node name="HitboxComponent" type="Area2D" parent="HazardPulseEmitter" unique_id=1654266992 node_paths=PackedStringArray("collision_shape")]
 script = ExtResource("7_hitbox")
 collision_shape = NodePath("CollisionShape2D")
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="HazardPulseEmitter/HitboxComponent"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="HazardPulseEmitter/HitboxComponent" unique_id=1259060969]
 shape = SubResource("CircleShape2D_pulse")
 
-[node name="Player" parent="." instance=ExtResource("2_player")]
+[node name="Player" parent="." unique_id=1142524873 instance=ExtResource("2_player")]
 position = Vector2(320, 195)
 
-[node name="CanvasLayer" type="CanvasLayer" parent="."]
+[node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=1005759546]
 
-[node name="TelemetryPanel" type="ColorRect" parent="CanvasLayer"]
+[node name="TelemetryPanel" type="ColorRect" parent="CanvasLayer" unique_id=1039917482]
 offset_left = 38.0
 offset_top = 34.0
 offset_right = 602.0
 offset_bottom = 132.0
 color = Color(0.05, 0.06, 0.08, 0.85)
 
-[node name="TelemetryLabel" type="Label" parent="CanvasLayer/TelemetryPanel"]
+[node name="TelemetryLabel" type="Label" parent="CanvasLayer/TelemetryPanel" unique_id=1080116333]
 layout_mode = 0
 offset_left = 8.0
 offset_top = 5.0

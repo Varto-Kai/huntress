@@ -15,5 +15,5 @@ is_false_lead = true
 concluded_style_weakness = 0
 concluded_style_resistance = 1
 concluded_element_weakness = 1
-concluded_oil_recipe = "Óleo de Ignis (Fabricação Enganosa: 1x Sebo Inflamável + 1x Brasa Seca)"
+concluded_oil_recipe = "Óleo Ígneo (Enganoso: 1x Base Alquímica Pura + 1x Sebo Inflamável + 1x Brasa Seca)"
 concluded_behavior_hint = ""

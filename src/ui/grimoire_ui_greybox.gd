@@ -1,8 +1,7 @@
 class_name GrimoireUIGreybox
 extends Control
-## Interface Greybox do Grimório em Tempo Real Tático (Q3) com layout em 2 colunas opacas,
-## cartões individuais de evidência sem sobreposição, Julgamento Manual de Pistas Falsas (Q5),
-## Fórmula de Materiais do Óleo Fabricável e Banner Toast (SPEC-003: RF-006, RF-007, RF-008).
+## Interface Greybox do Grimório em Tempo Real Tático (Q3) com suporte a modo tela cheia (Investigação)
+## e modo acoplado Lado a Lado à esquerda da Bancada de Alquimia na Fogueira (SPEC-003 & SPEC-004: Q3, RF-006).
 
 signal grimoire_visibility_changed(is_open: bool)
 
@@ -13,6 +12,7 @@ var grimoire_component: GrimoireComponent
 var input_component: PlayerInputComponent
 var selected_monster_id: StringName = &"armored_carapace"
 var is_grimoire_open: bool = false
+var is_docked_with_bench: bool = false
 
 var _toast_panel: PanelContainer
 var _toast_label: Label
@@ -20,6 +20,8 @@ var _toast_timer: float = 0.0
 var _backdrop: ColorRect
 var _main_panel: PanelContainer
 var _monster_tabs_box: HBoxContainer
+var _content_split: BoxContainer
+var _left_card: PanelContainer
 var _synthesis_label: Label
 var _clues_vbox: VBoxContainer
 
@@ -55,12 +57,38 @@ func bind_components(p_grimoire: GrimoireComponent, p_input: PlayerInputComponen
 	refresh_ui()
 
 
+func set_docked_mode(docked: bool) -> void:
+	is_docked_with_bench = docked
+	if _main_panel == null or _content_split == null or _left_card == null:
+		return
+	if is_docked_with_bench:
+		_main_panel.position = Vector2(8.0, 10.0)
+		_main_panel.size = Vector2(308.0, 340.0)
+		_content_split.vertical = true
+		_left_card.custom_minimum_size = Vector2(290.0, 118.0)
+		_synthesis_label.custom_minimum_size = Vector2(276.0, 0.0)
+	else:
+		_main_panel.position = Vector2(14.0, 10.0)
+		_main_panel.size = Vector2(612.0, 340.0)
+		_content_split.vertical = false
+		_left_card.custom_minimum_size = Vector2(236.0, 0.0)
+		_synthesis_label.custom_minimum_size = Vector2(220.0, 0.0)
+	refresh_ui()
+
+
 func toggle_grimoire() -> void:
-	set_grimoire_open(not is_grimoire_open)
+	if is_grimoire_open:
+		set_docked_mode(false)
+		set_grimoire_open(false)
+	else:
+		set_docked_mode(false)
+		set_grimoire_open(true)
 
 
 func set_grimoire_open(open_state: bool) -> void:
 	is_grimoire_open = open_state
+	if not is_grimoire_open:
+		is_docked_with_bench = false
 	if _backdrop != null:
 		_backdrop.visible = is_grimoire_open
 	if _main_panel != null:
@@ -90,17 +118,17 @@ func refresh_ui() -> void:
 	var oil_sec: Dictionary = state.get("oil_section", {}) as Dictionary
 	var beh_sec: Dictionary = state.get("behavior_section", {}) as Dictionary
 	var solved: bool = bool(state.get("deduction_solved", false))
-	var s_warn: String = "\n  ⚠️ CONFLITO: Pista contraditória ativa!" if bool(style_sec.get("has_conflict", false)) else ""
-	var o_warn: String = "\n  ⚠️ CONFLITO: Pista contraditória ativa!" if bool(oil_sec.get("has_conflict", false)) else ""
-	var banner: String = "✅ DEDUÇÃO CONCLUÍDA" if solved else "🔍 EM INVESTIGAÇÃO (Descarte pistas falsas)"
+	var s_warn: String = " [⚠️ CONFLITO]" if bool(style_sec.get("has_conflict", false)) else ""
+	var o_warn: String = " [⚠️ CONFLITO]" if bool(oil_sec.get("has_conflict", false)) else ""
+	var banner: String = "✅ DEDUÇÃO CONCLUÍDA" if solved else "🔍 EM INVESTIGAÇÃO"
 
 	_synthesis_label.text = (
-		"📖 %s\n%s\nPistas: %d / %d | %s\n\n"
-		+ "⚔️ POSTURA RECOMENDADA:\n  %s (Evitar: %s)%s\n\n"
-		+ "🧪 ALQUIMIA & ÓLEO FABRICÁVEL:\n  %s\n  %s%s\n\n"
-		+ "⚡ COMPORTAMENTO & STAGGER:\n  %s"
+		"📖 %s (%d/%d) | %s\n"
+		+ "⚔️ Postura: %s (Evitar: %s)%s\n"
+		+ "🧪 Óleo: %s | %s%s\n"
+		+ "⚡ Stagger: %s"
 	) % [
-		String(state.get("display_name", "???")), String(state.get("subtitle", "???")),
+		String(state.get("display_name", "???")),
 		int(state.get("discovered_count", 0)), int(state.get("total_clues", 0)), banner,
 		String(style_sec.get("style_weakness_text", "???")), String(style_sec.get("style_resistance_text", "???")), s_warn,
 		String(oil_sec.get("element_weakness_text", "???")), String(oil_sec.get("oil_recipe_text", "???")), o_warn,
@@ -118,7 +146,7 @@ func _add_clue_card(clue: ClueData) -> void:
 	var discarded: bool = grimoire_component.tracker.is_clue_discarded(clue.clue_id)
 	var card: PanelContainer = PanelContainer.new()
 	var bg: Color = Color(0.08, 0.09, 0.11, 0.9) if discarded else Color(0.12, 0.15, 0.2, 1.0)
-	card.add_theme_stylebox_override("panel", _make_box(bg, Color(0.28, 0.34, 0.44, 1.0), 5))
+	card.add_theme_stylebox_override("panel", _make_box(bg, Color(0.28, 0.34, 0.44, 1.0), 4))
 	var vbox: VBoxContainer = VBoxContainer.new()
 	vbox.add_theme_constant_override("separation", 2)
 	card.add_child(vbox)
@@ -127,7 +155,7 @@ func _add_clue_card(clue: ClueData) -> void:
 	var title_lbl: Label = Label.new()
 	title_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	title_lbl.add_theme_font_size_override("font_size", 8)
-	title_lbl.text = "%s%s [%s]" % ["[DESCARTADA] " if discarded else "🟢 ", clue.title, GrimoireTypes.get_section_title(clue.section_type)]
+	title_lbl.text = "%s%s" % ["[DESCARTADA] " if discarded else "🟢 ", clue.title]
 	title_lbl.modulate = Color(0.6, 0.6, 0.65, 1.0) if discarded else Color(1.0, 0.88, 0.4, 1.0)
 	var btn: Button = Button.new()
 	btn.add_theme_font_size_override("font_size", 8)
@@ -140,7 +168,7 @@ func _add_clue_card(clue: ClueData) -> void:
 	vbox.add_child(header)
 
 	var desc_lbl: Label = Label.new()
-	desc_lbl.custom_minimum_size = Vector2(315.0, 0.0)
+	desc_lbl.custom_minimum_size = Vector2(265.0 if is_docked_with_bench else 315.0, 0.0)
 	desc_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	desc_lbl.add_theme_font_size_override("font_size", 8)
 	desc_lbl.text = clue.evidence_description
@@ -158,38 +186,39 @@ func _build_greybox_layout() -> void:
 	_main_panel = PanelContainer.new()
 	_main_panel.position = Vector2(14.0, 10.0)
 	_main_panel.size = Vector2(612.0, 340.0)
-	_main_panel.add_theme_stylebox_override("panel", _make_box(Color(0.07, 0.09, 0.13, 0.99), Color(0.26, 0.34, 0.46, 1.0), 8))
+	_main_panel.add_theme_stylebox_override("panel", _make_box(Color(0.07, 0.09, 0.13, 0.99), Color(0.26, 0.34, 0.46, 1.0), 6))
 	var root_vbox: VBoxContainer = VBoxContainer.new()
-	root_vbox.add_theme_constant_override("separation", 6)
+	root_vbox.add_theme_constant_override("separation", 5)
 	_main_panel.add_child(root_vbox)
 
 	_monster_tabs_box = HBoxContainer.new()
-	_monster_tabs_box.add_theme_constant_override("separation", 6)
+	_monster_tabs_box.add_theme_constant_override("separation", 4)
 	root_vbox.add_child(_monster_tabs_box)
 
-	var cols: HBoxContainer = HBoxContainer.new()
-	cols.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	cols.add_theme_constant_override("separation", 8)
-	root_vbox.add_child(cols)
+	_content_split = BoxContainer.new()
+	_content_split.vertical = false
+	_content_split.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_content_split.add_theme_constant_override("separation", 6)
+	root_vbox.add_child(_content_split)
 
-	var left_card: PanelContainer = PanelContainer.new()
-	left_card.custom_minimum_size = Vector2(236.0, 0.0)
-	left_card.add_theme_stylebox_override("panel", _make_box(Color(0.09, 0.11, 0.16, 1.0), Color(0.2, 0.25, 0.34, 1.0), 6))
+	_left_card = PanelContainer.new()
+	_left_card.custom_minimum_size = Vector2(236.0, 0.0)
+	_left_card.add_theme_stylebox_override("panel", _make_box(Color(0.09, 0.11, 0.16, 1.0), Color(0.2, 0.25, 0.34, 1.0), 5))
 	_synthesis_label = Label.new()
 	_synthesis_label.custom_minimum_size = Vector2(220.0, 0.0)
 	_synthesis_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_synthesis_label.add_theme_font_size_override("font_size", 8)
-	left_card.add_child(_synthesis_label)
-	cols.add_child(left_card)
+	_left_card.add_child(_synthesis_label)
+	_content_split.add_child(_left_card)
 
 	var scroll: ScrollContainer = ScrollContainer.new()
 	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_clues_vbox = VBoxContainer.new()
 	_clues_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_clues_vbox.add_theme_constant_override("separation", 5)
+	_clues_vbox.add_theme_constant_override("separation", 4)
 	scroll.add_child(_clues_vbox)
-	cols.add_child(scroll)
+	_content_split.add_child(scroll)
 	add_child(_main_panel)
 
 	_toast_panel = PanelContainer.new()
@@ -228,7 +257,7 @@ func _rebuild_monster_tabs() -> void:
 		_monster_tabs_box.add_child(btn)
 	var close_btn: Button = Button.new()
 	close_btn.add_theme_font_size_override("font_size", 8)
-	close_btn.text = "Fechar [G / Tab]"
+	close_btn.text = "Fechar [G]"
 	close_btn.pressed.connect(func() -> void: set_grimoire_open(false))
 	_monster_tabs_box.add_child(close_btn)
 

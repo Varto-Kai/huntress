@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="OilRecipeData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/oil_recipe_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+recipe_id = &"recipe_ignis_oil"
+display_name = "Óleo Ígneo (Fogo)"
+description = "Revestimento incendiário formulado para inflamar pelagens densas e secreções resinosas."
+result_oil = 1
+required_reagent_ids = Array[StringName]([&"alchemical_base", &"flammable_tallow", &"dry_ember"])
+required_reagent_amounts = Array[int]([1, 1, 1])
+charges_per_craft = 8

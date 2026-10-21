@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="ReagentData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/reagent_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+reagent_id = &"dry_ember"
+display_name = "Brasa Seca"
+description = "Núcleo ígneo concentrado que inflama óleos alquímicos instantaneamente."
+max_stack = 10
+greybox_color = Color(0.905882, 0.298039, 0.235294, 1)

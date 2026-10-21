@@ -1,7 +1,7 @@
-[gd_resource type="Resource" script_class="CombatStyleData" load_steps=5 format=3]
+[gd_resource type="Resource" script_class="CombatStyleData" format=3 uid="uid://d3b2kuv4e4i2w"]
 
-[ext_resource type="Script" path="res://src/data/combat_style_data.gd" id="1_style"]
-[ext_resource type="Script" path="res://src/data/attack_step_data.gd" id="2_step"]
+[ext_resource type="Script" uid="uid://dgailcw4ersau" path="res://src/data/combat_style_data.gd" id="1_style"]
+[ext_resource type="Script" uid="uid://dhclfvb0evxxj" path="res://src/data/attack_step_data.gd" id="2_step"]
 
 [sub_resource type="Resource" id="Resource_heavy1"]
 script = ExtResource("2_step")
@@ -9,9 +9,6 @@ step_name = &"HeavyImpact1"
 windup_duration = 0.15
 active_duration = 0.11
 recovery_duration = 0.19
-damage_multiplier = 1.0
-stagger_multiplier = 1.0
-knockback_multiplier = 1.0
 attack_step_speed = 115.0
 hitbox_size = Vector2(34, 38)
 hitbox_forward_offset = 22.0

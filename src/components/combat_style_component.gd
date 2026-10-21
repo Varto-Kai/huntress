@@ -1,7 +1,7 @@
 class_name CombatStyleComponent
 extends Node
-## Componente que gerencia os Estilos de Luta disponíveis da Caçadora (Postura Rápida vs. Postura Pesada)
-## e o Óleo elemental ativo, construindo o AttackData correspondente para cada passo do combo (SPEC-002: RF-004, RF-006).
+## Componente que gerencia os Estilos de Luta da Caçadora (Postura Rápida vs. Postura Pesada)
+## e o Óleo elemental ativo, suportando modo Híbrido Tático (Q1) e Cargas por Golpe (Q2) (SPEC-002 & SPEC-004).
 
 signal style_changed(new_style: CombatStyleData)
 signal oil_changed(new_oil: CombatTypes.ElementOil)
@@ -9,10 +9,19 @@ signal oil_changed(new_oil: CombatTypes.ElementOil)
 @export var available_styles: Array[CombatStyleData] = []
 @export var active_style_index: int = 0
 @export var active_oil: CombatTypes.ElementOil = CombatTypes.ElementOil.NONE
+@export var allow_free_debug_switching: bool = true
+
+var inventory_component: InventoryComponent = null
 
 
 func _ready() -> void:
 	ensure_default_styles()
+
+
+func bind_inventory(p_inventory: InventoryComponent) -> void:
+	inventory_component = p_inventory
+	if inventory_component != null and not inventory_component.active_oil_depleted.is_connected(_on_active_oil_depleted):
+		inventory_component.active_oil_depleted.connect(_on_active_oil_depleted)
 
 
 func ensure_default_styles() -> void:
@@ -43,11 +52,42 @@ func cycle_style() -> CombatStyleData:
 	return current
 
 
-func cycle_oil() -> CombatTypes.ElementOil:
-	var next_val: int = (int(active_oil) + 1) % 3
-	active_oil = next_val as CombatTypes.ElementOil
+func equip_oil(oil: CombatTypes.ElementOil) -> bool:
+	if not allow_free_debug_switching and oil != CombatTypes.ElementOil.NONE:
+		if inventory_component == null or not inventory_component.has_oil_charges(oil):
+			return false
+	active_oil = oil
 	oil_changed.emit(active_oil)
+	return true
+
+
+func cycle_oil() -> CombatTypes.ElementOil:
+	if allow_free_debug_switching or inventory_component == null:
+		var next_val: int = (int(active_oil) + 1) % 3
+		active_oil = next_val as CombatTypes.ElementOil
+		oil_changed.emit(active_oil)
+		return active_oil
+
+	var candidates: Array[CombatTypes.ElementOil] = [
+		CombatTypes.ElementOil.NONE,
+		CombatTypes.ElementOil.IGNIS_OIL,
+		CombatTypes.ElementOil.VITRIOL_ACID,
+	]
+	var cur_idx: int = candidates.find(active_oil)
+	for step: int in range(1, candidates.size() + 1):
+		var candidate: CombatTypes.ElementOil = candidates[(cur_idx + step) % candidates.size()]
+		if candidate == CombatTypes.ElementOil.NONE or inventory_component.has_oil_charges(candidate):
+			active_oil = candidate
+			oil_changed.emit(active_oil)
+			return active_oil
 	return active_oil
+
+
+func notify_hit_landed() -> void:
+	if allow_free_debug_switching or inventory_component == null:
+		return
+	if active_oil != CombatTypes.ElementOil.NONE:
+		inventory_component.consume_charge_for_oil(active_oil)
 
 
 func build_attack_data(step_index: int, direction: Vector2, team: CombatTypes.Team = CombatTypes.Team.PLAYER) -> AttackData:
@@ -65,3 +105,9 @@ func build_attack_data(step_index: int, direction: Vector2, team: CombatTypes.Te
 	atk.direction = direction
 	atk.sanitize()
 	return atk
+
+
+func _on_active_oil_depleted(depleted_oil: CombatTypes.ElementOil) -> void:
+	if active_oil == depleted_oil:
+		active_oil = CombatTypes.ElementOil.NONE
+		oil_changed.emit(active_oil)

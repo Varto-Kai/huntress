@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="ReagentData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/reagent_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+reagent_id = &"flammable_tallow"
+display_name = "Sebo Inflamável"
+description = "Gordura animal densa que alimenta chamas intensas ao contato com faíscas."
+max_stack = 10
+greybox_color = Color(0.901961, 0.494118, 0.133333, 1)

@@ -1,8 +1,8 @@
 class_name GrimoireUIGreybox
 extends Control
-## Interface Greybox do Grimório em Tempo Real Tático (Q3) com suporte a
-## Julgamento Manual de Pistas Falsas (Q5 / toggle_clue_discarded), Síntese de Estilo,
-## Fórmula de Materiais do Óleo Fabricável e Banner Toast de descoberta (SPEC-003: RF-006, RF-007, RF-008).
+## Interface Greybox do Grimório em Tempo Real Tático (Q3) com layout em 2 colunas opacas,
+## cartões individuais de evidência sem sobreposição, Julgamento Manual de Pistas Falsas (Q5),
+## Fórmula de Materiais do Óleo Fabricável e Banner Toast (SPEC-003: RF-006, RF-007, RF-008).
 
 signal grimoire_visibility_changed(is_open: bool)
 
@@ -17,6 +17,7 @@ var is_grimoire_open: bool = false
 var _toast_panel: PanelContainer
 var _toast_label: Label
 var _toast_timer: float = 0.0
+var _backdrop: ColorRect
 var _main_panel: PanelContainer
 var _monster_tabs_box: HBoxContainer
 var _synthesis_label: Label
@@ -60,6 +61,8 @@ func toggle_grimoire() -> void:
 
 func set_grimoire_open(open_state: bool) -> void:
 	is_grimoire_open = open_state
+	if _backdrop != null:
+		_backdrop.visible = is_grimoire_open
 	if _main_panel != null:
 		_main_panel.visible = is_grimoire_open
 	mouse_filter = Control.MOUSE_FILTER_STOP if is_grimoire_open else Control.MOUSE_FILTER_IGNORE
@@ -73,11 +76,10 @@ func set_grimoire_open(open_state: bool) -> void:
 
 
 func show_toast(message: String) -> void:
-	if _toast_label == null or _toast_panel == null:
-		return
-	_toast_label.text = message
-	_toast_panel.visible = true
-	_toast_timer = notification_display_duration
+	if _toast_label != null and _toast_panel != null:
+		_toast_label.text = message
+		_toast_panel.visible = true
+		_toast_timer = notification_display_duration
 
 
 func refresh_ui() -> void:
@@ -88,81 +90,127 @@ func refresh_ui() -> void:
 	var oil_sec: Dictionary = state.get("oil_section", {}) as Dictionary
 	var beh_sec: Dictionary = state.get("behavior_section", {}) as Dictionary
 	var solved: bool = bool(state.get("deduction_solved", false))
-	var style_warn: String = " [⚠️ Conflito!]" if bool(style_sec.get("has_conflict", false)) else ""
-	var oil_warn: String = " [⚠️ Conflito!]" if bool(oil_sec.get("has_conflict", false)) else ""
+	var s_warn: String = "\n  ⚠️ CONFLITO: Pista contraditória ativa!" if bool(style_sec.get("has_conflict", false)) else ""
+	var o_warn: String = "\n  ⚠️ CONFLITO: Pista contraditória ativa!" if bool(oil_sec.get("has_conflict", false)) else ""
 	var banner: String = "✅ DEDUÇÃO CONCLUÍDA" if solved else "🔍 EM INVESTIGAÇÃO (Descarte pistas falsas)"
 
 	_synthesis_label.text = (
-		"📖 %s — %s (%d/%d Pistas) | %s\n"
-		+ "• Postura Recomendada: %s | Evitar: %s%s\n"
-		+ "• Fraqueza Alquímica: %s | Receita: %s%s\n"
-		+ "• Comportamento & Stagger: %s"
+		"📖 %s\n%s\nPistas: %d / %d | %s\n\n"
+		+ "⚔️ POSTURA RECOMENDADA:\n  %s (Evitar: %s)%s\n\n"
+		+ "🧪 ALQUIMIA & ÓLEO FABRICÁVEL:\n  %s\n  %s%s\n\n"
+		+ "⚡ COMPORTAMENTO & STAGGER:\n  %s"
 	) % [
 		String(state.get("display_name", "???")), String(state.get("subtitle", "???")),
 		int(state.get("discovered_count", 0)), int(state.get("total_clues", 0)), banner,
-		String(style_sec.get("style_weakness_text", "???")), String(style_sec.get("style_resistance_text", "???")), style_warn,
-		String(oil_sec.get("element_weakness_text", "???")), String(oil_sec.get("oil_recipe_text", "???")), oil_warn,
+		String(style_sec.get("style_weakness_text", "???")), String(style_sec.get("style_resistance_text", "???")), s_warn,
+		String(oil_sec.get("element_weakness_text", "???")), String(oil_sec.get("oil_recipe_text", "???")), o_warn,
 		String(beh_sec.get("behavior_text", "???")),
 	]
 
 	for child: Node in _clues_vbox.get_children():
 		child.queue_free()
-
 	var discovered: Array[ClueData] = grimoire_component.tracker.get_discovered_clues_for_monster(selected_monster_id)
 	for clue: ClueData in discovered:
-		_add_clue_row(clue)
+		_add_clue_card(clue)
 
 
-func _add_clue_row(clue: ClueData) -> void:
-	var row: HBoxContainer = HBoxContainer.new()
+func _add_clue_card(clue: ClueData) -> void:
 	var discarded: bool = grimoire_component.tracker.is_clue_discarded(clue.clue_id)
-	var info_lbl: Label = Label.new()
-	info_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	info_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	info_lbl.add_theme_font_size_override("font_size", 9)
-	var prefix: String = "[DESCARTADA] " if discarded else "[ATIVA] "
-	info_lbl.text = "%s%s (%s): %s" % [prefix, clue.title, GrimoireTypes.get_section_title(clue.section_type), clue.evidence_description]
-	info_lbl.modulate = Color(0.6, 0.6, 0.6, 0.85) if discarded else Color(0.95, 0.95, 0.95, 1.0)
+	var card: PanelContainer = PanelContainer.new()
+	var bg: Color = Color(0.08, 0.09, 0.11, 0.9) if discarded else Color(0.12, 0.15, 0.2, 1.0)
+	card.add_theme_stylebox_override("panel", _make_box(bg, Color(0.28, 0.34, 0.44, 1.0), 5))
+	var vbox: VBoxContainer = VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 2)
+	card.add_child(vbox)
 
+	var header: HBoxContainer = HBoxContainer.new()
+	var title_lbl: Label = Label.new()
+	title_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	title_lbl.add_theme_font_size_override("font_size", 8)
+	title_lbl.text = "%s%s [%s]" % ["[DESCARTADA] " if discarded else "🟢 ", clue.title, GrimoireTypes.get_section_title(clue.section_type)]
+	title_lbl.modulate = Color(0.6, 0.6, 0.65, 1.0) if discarded else Color(1.0, 0.88, 0.4, 1.0)
 	var btn: Button = Button.new()
-	btn.add_theme_font_size_override("font_size", 9)
-	btn.text = "Restaurar Pista" if discarded else "Descartar Pista"
+	btn.add_theme_font_size_override("font_size", 8)
+	btn.text = "Restaurar" if discarded else "Descartar Pista"
 	var cid: StringName = clue.clue_id
 	var mid: StringName = clue.monster_id
 	btn.pressed.connect(func() -> void: grimoire_component.toggle_clue_discard(cid, mid))
-	row.add_child(info_lbl)
-	row.add_child(btn)
-	_clues_vbox.add_child(row)
+	header.add_child(title_lbl)
+	header.add_child(btn)
+	vbox.add_child(header)
+
+	var desc_lbl: Label = Label.new()
+	desc_lbl.custom_minimum_size = Vector2(315.0, 0.0)
+	desc_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	desc_lbl.add_theme_font_size_override("font_size", 8)
+	desc_lbl.text = clue.evidence_description
+	desc_lbl.modulate = Color(0.55, 0.55, 0.6, 0.85) if discarded else Color(0.92, 0.94, 0.98, 1.0)
+	vbox.add_child(desc_lbl)
+	_clues_vbox.add_child(card)
 
 
 func _build_greybox_layout() -> void:
-	_toast_panel = PanelContainer.new()
-	_toast_panel.visible = false
-	_toast_panel.position = Vector2(180.0, 8.0)
-	_toast_panel.size = Vector2(448.0, 34.0)
-	_toast_label = Label.new()
-	_toast_label.add_theme_font_size_override("font_size", 9)
-	_toast_panel.add_child(_toast_label)
-	add_child(_toast_panel)
+	_backdrop = ColorRect.new()
+	_backdrop.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_backdrop.color = Color(0.03, 0.04, 0.06, 0.94)
+	add_child(_backdrop)
 
 	_main_panel = PanelContainer.new()
-	_main_panel.position = Vector2(36.0, 24.0)
-	_main_panel.size = Vector2(568.0, 312.0)
+	_main_panel.position = Vector2(14.0, 10.0)
+	_main_panel.size = Vector2(612.0, 340.0)
+	_main_panel.add_theme_stylebox_override("panel", _make_box(Color(0.07, 0.09, 0.13, 0.99), Color(0.26, 0.34, 0.46, 1.0), 8))
 	var root_vbox: VBoxContainer = VBoxContainer.new()
+	root_vbox.add_theme_constant_override("separation", 6)
 	_main_panel.add_child(root_vbox)
+
 	_monster_tabs_box = HBoxContainer.new()
+	_monster_tabs_box.add_theme_constant_override("separation", 6)
 	root_vbox.add_child(_monster_tabs_box)
+
+	var cols: HBoxContainer = HBoxContainer.new()
+	cols.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	cols.add_theme_constant_override("separation", 8)
+	root_vbox.add_child(cols)
+
+	var left_card: PanelContainer = PanelContainer.new()
+	left_card.custom_minimum_size = Vector2(236.0, 0.0)
+	left_card.add_theme_stylebox_override("panel", _make_box(Color(0.09, 0.11, 0.16, 1.0), Color(0.2, 0.25, 0.34, 1.0), 6))
 	_synthesis_label = Label.new()
+	_synthesis_label.custom_minimum_size = Vector2(220.0, 0.0)
 	_synthesis_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_synthesis_label.add_theme_font_size_override("font_size", 9)
-	root_vbox.add_child(_synthesis_label)
+	_synthesis_label.add_theme_font_size_override("font_size", 8)
+	left_card.add_child(_synthesis_label)
+	cols.add_child(left_card)
+
 	var scroll: ScrollContainer = ScrollContainer.new()
+	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_clues_vbox = VBoxContainer.new()
 	_clues_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_clues_vbox.add_theme_constant_override("separation", 5)
 	scroll.add_child(_clues_vbox)
-	root_vbox.add_child(scroll)
+	cols.add_child(scroll)
 	add_child(_main_panel)
+
+	_toast_panel = PanelContainer.new()
+	_toast_panel.visible = false
+	_toast_panel.position = Vector2(130.0, 326.0)
+	_toast_panel.size = Vector2(380.0, 26.0)
+	_toast_panel.add_theme_stylebox_override("panel", _make_box(Color(0.05, 0.13, 0.19, 0.96), Color(0.0, 0.82, 1.0, 1.0), 4))
+	_toast_label = Label.new()
+	_toast_label.add_theme_font_size_override("font_size", 8)
+	_toast_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_toast_panel.add_child(_toast_label)
+	add_child(_toast_panel)
+
+
+func _make_box(bg: Color, border: Color, pad: int) -> StyleBoxFlat:
+	var sb: StyleBoxFlat = StyleBoxFlat.new()
+	sb.bg_color = bg
+	sb.border_color = border
+	sb.set_border_width_all(1)
+	sb.set_content_margin_all(float(pad))
+	return sb
 
 
 func _rebuild_monster_tabs() -> void:
@@ -173,20 +221,21 @@ func _rebuild_monster_tabs() -> void:
 	for mid: StringName in grimoire_component.tracker.get_registered_monster_ids():
 		var entry: MonsterGrimoireEntryData = grimoire_component.tracker.get_entry(mid)
 		var btn: Button = Button.new()
-		btn.add_theme_font_size_override("font_size", 9)
-		btn.text = entry.display_name if entry != null else String(mid)
+		btn.add_theme_font_size_override("font_size", 8)
+		btn.text = "📖 " + (entry.display_name if entry != null else String(mid))
 		var target_id: StringName = mid
-		btn.pressed.connect(func() -> void:
-			selected_monster_id = target_id
-			refresh_ui()
-		)
+		btn.pressed.connect(func() -> void: selected_monster_id = target_id; refresh_ui())
 		_monster_tabs_box.add_child(btn)
+	var close_btn: Button = Button.new()
+	close_btn.add_theme_font_size_override("font_size", 8)
+	close_btn.text = "Fechar [G / Tab]"
+	close_btn.pressed.connect(func() -> void: set_grimoire_open(false))
+	_monster_tabs_box.add_child(close_btn)
 
 
 func _on_clue_discovered(clue_data: ClueData, is_new: bool) -> void:
 	selected_monster_id = clue_data.monster_id
-	var tag: String = "Nova Pista no Grimório [G/Tab]" if is_new else "Pista Revisitada [G/Tab]"
-	show_toast("🔎 %s: %s (%s)" % [tag, clue_data.title, GrimoireTypes.get_section_title(clue_data.section_type)])
+	show_toast("🔎 %s: %s" % ["Nova Pista [G/Tab]" if is_new else "Pista Revisitada [G/Tab]", clue_data.title])
 	if is_grimoire_open:
 		refresh_ui()
 
@@ -199,4 +248,4 @@ func _on_entry_updated(_monster_id: StringName, _state: Dictionary) -> void:
 func _on_player_damaged(_amount: float, _kb: Vector2, _matchup: int) -> void:
 	if is_grimoire_open:
 		set_grimoire_open(false)
-		show_toast("⚠️ Grimório fechado automaticamente ao sofrer ataque!")
+		show_toast("⚠️ Grimório fechado ao sofrer ataque!")

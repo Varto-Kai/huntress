@@ -86,10 +86,28 @@ func _physics_process(delta: float) -> void:
 func apply_grimoire_state(state: Dictionary) -> void:
 	var style_sec: Dictionary = state.get("style_section", {}) as Dictionary
 	var oil_sec: Dictionary = state.get("oil_section", {}) as Dictionary
-	var style_txt: String = String(style_sec.get("style_weakness_text", "???"))
-	var oil_txt: String = String(oil_sec.get("element_weakness_text", "???"))
-	_telemetry_summary = "Fraqueza: %s\nÓleo: %s" % [style_txt, oil_txt]
+	var style_txt: String = _short_style_label(style_sec)
+	var oil_txt: String = _short_oil_label(oil_sec)
+	_telemetry_summary = "%s + %s" % [style_txt, oil_txt]
 	_refresh_overhead_label()
+
+
+func _short_style_label(sec: Dictionary) -> String:
+	if not bool(sec.get("unlocked", false)):
+		return "Estilo: ???"
+	var st: int = int(sec.get("style_weakness", 0))
+	return "Corte Rápido" if st == CombatTypes.StyleType.FAST_STEEL else "Impacto Pesado"
+
+
+func _short_oil_label(sec: Dictionary) -> String:
+	if not bool(sec.get("unlocked", false)):
+		return "Óleo: ???"
+	var el: int = int(sec.get("element_weakness", 0))
+	if el == CombatTypes.ElementOil.IGNIS_OIL:
+		return "Ignis (Fogo)"
+	if el == CombatTypes.ElementOil.VITRIOL_ACID:
+		return "Vitríolo (Ácido)"
+	return "Sem Óleo"
 
 
 func _refresh_overhead_label() -> void:
@@ -98,7 +116,7 @@ func _refresh_overhead_label() -> void:
 	if _telemetry_summary.is_empty():
 		status_label.text = dummy_title
 	else:
-		status_label.text = "%s\n%s" % [dummy_title, _telemetry_summary]
+		status_label.text = "%s\n[%s]" % [dummy_title, _telemetry_summary]
 
 
 func _on_hit_received(_attack_data: AttackData, resolution: Dictionary) -> void:

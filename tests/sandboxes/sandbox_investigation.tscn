@@ -19,99 +19,125 @@
 [ext_resource type="Script" path="res://src/ui/grimoire_ui_greybox.gd" id="17_grimoire_ui"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_horiz_wall"]
-size = Vector2(600, 16)
+size = Vector2(616, 12)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_vert_wall"]
-size = Vector2(16, 328)
+size = Vector2(12, 312)
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_pulse"]
-radius = 38.0
+radius = 34.0
 
 [node name="SandboxInvestigation" type="Node2D"]
 script = ExtResource("1_sandbox")
 
 [node name="ArenaFloor" type="Polygon2D" parent="."]
 color = Color(0.105882, 0.12549, 0.156863, 1)
-polygon = PackedVector2Array(20, 16, 620, 16, 620, 344, 20, 344)
+polygon = PackedVector2Array(12, 36, 628, 36, 628, 352, 12, 352)
+
+[node name="ZoneLeftBg" type="Polygon2D" parent="."]
+color = Color(0.13, 0.16, 0.2, 0.65)
+polygon = PackedVector2Array(22, 46, 255, 46, 255, 225, 22, 225)
+
+[node name="ZoneLeftTitle" type="Label" parent="."]
+offset_left = 28.0
+offset_top = 48.0
+offset_right = 250.0
+offset_bottom = 62.0
+theme_override_font_sizes/font_size = 8
+modulate = Color(0.7, 0.82, 0.95, 0.85)
+text = "ZONA OESTE: Rastro do Couraçado (3 Reais + 1 Falsa)"
+
+[node name="ZoneRightBg" type="Polygon2D" parent="."]
+color = Color(0.16, 0.13, 0.2, 0.65)
+polygon = PackedVector2Array(385, 46, 618, 46, 618, 225, 385, 225)
+
+[node name="ZoneRightTitle" type="Label" parent="."]
+offset_left = 390.0
+offset_top = 48.0
+offset_right = 614.0
+offset_bottom = 62.0
+theme_override_font_sizes/font_size = 8
+modulate = Color(0.9, 0.75, 0.98, 0.85)
+text = "ZONA LESTE: Rastro da Fera Ágil (3 Reais + 1 Falsa)"
 
 [node name="Walls" type="Node2D" parent="."]
 
 [node name="NorthWall" type="StaticBody2D" parent="Walls"]
-position = Vector2(320, 24)
+position = Vector2(320, 40)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Walls/NorthWall"]
 shape = SubResource("RectangleShape2D_horiz_wall")
 
 [node name="Visual" type="Polygon2D" parent="Walls/NorthWall"]
 color = Color(0.278431, 0.317647, 0.380392, 1)
-polygon = PackedVector2Array(-300, -8, 300, -8, 300, 8, -300, 8)
+polygon = PackedVector2Array(-308, -6, 308, -6, 308, 6, -308, 6)
 
 [node name="SouthWall" type="StaticBody2D" parent="Walls"]
-position = Vector2(320, 336)
+position = Vector2(320, 348)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Walls/SouthWall"]
 shape = SubResource("RectangleShape2D_horiz_wall")
 
 [node name="Visual" type="Polygon2D" parent="Walls/SouthWall"]
 color = Color(0.278431, 0.317647, 0.380392, 1)
-polygon = PackedVector2Array(-300, -8, 300, -8, 300, 8, -300, 8)
+polygon = PackedVector2Array(-308, -6, 308, -6, 308, 6, -308, 6)
 
 [node name="WestWall" type="StaticBody2D" parent="Walls"]
-position = Vector2(28, 180)
+position = Vector2(18, 194)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Walls/WestWall"]
 shape = SubResource("RectangleShape2D_vert_wall")
 
 [node name="Visual" type="Polygon2D" parent="Walls/WestWall"]
 color = Color(0.278431, 0.317647, 0.380392, 1)
-polygon = PackedVector2Array(-8, -164, 8, -164, 8, 164, -8, 164)
+polygon = PackedVector2Array(-6, -156, 6, -156, 6, 156, -6, 156)
 
 [node name="EastWall" type="StaticBody2D" parent="Walls"]
-position = Vector2(612, 180)
+position = Vector2(622, 194)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Walls/EastWall"]
 shape = SubResource("RectangleShape2D_vert_wall")
 
 [node name="Visual" type="Polygon2D" parent="Walls/EastWall"]
 color = Color(0.278431, 0.317647, 0.380392, 1)
-polygon = PackedVector2Array(-8, -164, 8, -164, 8, 164, -8, 164)
+polygon = PackedVector2Array(-6, -156, 6, -156, 6, 156, -6, 156)
 
 [node name="InvestigationClues" type="Node2D" parent="."]
 
 [node name="ClueCarapaceTracks" parent="InvestigationClues" instance=ExtResource("8_clue_scene")]
-position = Vector2(96, 136)
+position = Vector2(78, 102)
 clue_data = ExtResource("9_c1")
 
 [node name="ClueCarapaceShell" parent="InvestigationClues" instance=ExtResource("8_clue_scene")]
-position = Vector2(180, 136)
+position = Vector2(198, 102)
 clue_data = ExtResource("10_c2")
 
 [node name="ClueCarapaceFalseCampfire" parent="InvestigationClues" instance=ExtResource("8_clue_scene")]
-position = Vector2(96, 206)
+position = Vector2(78, 184)
 clue_data = ExtResource("11_c3_false")
 
 [node name="ClueCarapacePillar" parent="InvestigationClues" instance=ExtResource("8_clue_scene")]
-position = Vector2(180, 206)
+position = Vector2(198, 184)
 clue_data = ExtResource("12_c4")
 
 [node name="ClueBeastFur" parent="InvestigationClues" instance=ExtResource("8_clue_scene")]
-position = Vector2(455, 136)
+position = Vector2(442, 102)
 clue_data = ExtResource("13_b1")
 
 [node name="ClueBeastFalseSkull" parent="InvestigationClues" instance=ExtResource("8_clue_scene")]
-position = Vector2(540, 136)
+position = Vector2(562, 102)
 clue_data = ExtResource("14_b2_false")
 
 [node name="ClueBeastResin" parent="InvestigationClues" instance=ExtResource("8_clue_scene")]
-position = Vector2(455, 206)
+position = Vector2(442, 184)
 clue_data = ExtResource("15_b3")
 
 [node name="ClueBeastClaws" parent="InvestigationClues" instance=ExtResource("8_clue_scene")]
-position = Vector2(540, 206)
+position = Vector2(562, 184)
 clue_data = ExtResource("16_b4")
 
 [node name="ArmoredDummy" parent="." instance=ExtResource("3_dummy")]
-position = Vector2(145, 290)
+position = Vector2(138, 304)
 monster_id = &"armored_carapace"
 dummy_title = "Couraçado das Ruínas"
 hide_telemetry_until_researched = true
@@ -119,7 +145,7 @@ defense_profile = ExtResource("4_def_armored")
 base_color = Color(0.364706, 0.427451, 0.494118, 1)
 
 [node name="AgileDummy" parent="." instance=ExtResource("3_dummy")]
-position = Vector2(495, 290)
+position = Vector2(502, 304)
 monster_id = &"agile_beast"
 dummy_title = "Fera Ágil da Clareira"
 hide_telemetry_until_researched = true
@@ -127,25 +153,25 @@ defense_profile = ExtResource("5_def_agile")
 base_color = Color(0.607843, 0.34902, 0.713726, 1)
 
 [node name="HazardPulseEmitter" type="Node2D" parent="."]
-position = Vector2(320, 290)
+position = Vector2(320, 304)
 script = ExtResource("6_emitter")
 
 [node name="TelegraphRing" type="Polygon2D" parent="HazardPulseEmitter"]
 visible = false
 color = Color(1, 0.75, 0, 0.35)
-polygon = PackedVector2Array(0, -38, 27, -27, 38, 0, 27, 27, 0, 38, -27, 27, -38, 0, -27, -27)
+polygon = PackedVector2Array(0, -34, 24, -24, 34, 0, 24, 24, 0, 34, -24, 24, -34, 0, -24, -24)
 
 [node name="CorePolygon" type="Polygon2D" parent="HazardPulseEmitter"]
 color = Color(0.498039, 0.54902, 0.552941, 1)
-polygon = PackedVector2Array(-9, -9, 9, -9, 9, 9, -9, 9)
+polygon = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 
 [node name="EmitterLabel" type="Label" parent="HazardPulseEmitter"]
-offset_left = -80.0
-offset_top = 12.0
-offset_right = 80.0
-offset_bottom = 28.0
-theme_override_font_sizes/font_size = 8
-text = "Totem Hostil (Cancela Inspeção/Grimório)"
+offset_left = -64.0
+offset_top = 10.0
+offset_right = 64.0
+offset_bottom = 24.0
+theme_override_font_sizes/font_size = 7
+text = "Totem Hostil"
 horizontal_alignment = 1
 
 [node name="HitboxComponent" type="Area2D" parent="HazardPulseEmitter" node_paths=PackedStringArray("collision_shape")]
@@ -156,23 +182,24 @@ collision_shape = NodePath("CollisionShape2D")
 shape = SubResource("CircleShape2D_pulse")
 
 [node name="Player" parent="." instance=ExtResource("2_player")]
-position = Vector2(320, 175)
+position = Vector2(320, 165)
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 
 [node name="TelemetryPanel" type="ColorRect" parent="CanvasLayer"]
-offset_left = 36.0
-offset_top = 32.0
-offset_right = 604.0
-offset_bottom = 104.0
-color = Color(0.05, 0.06, 0.08, 0.85)
+offset_left = 0.0
+offset_top = 0.0
+offset_right = 640.0
+offset_bottom = 33.0
+color = Color(0.04, 0.05, 0.08, 0.95)
 
 [node name="TelemetryLabel" type="Label" parent="CanvasLayer/TelemetryPanel"]
 layout_mode = 0
-offset_left = 8.0
-offset_top = 4.0
-offset_right = 560.0
-offset_bottom = 68.0
+offset_left = 10.0
+offset_top = 2.0
+offset_right = 630.0
+offset_bottom = 31.0
+theme_override_constants/line_spacing = 1
 theme_override_font_sizes/font_size = 8
 text = "Inicializando telemetria SPEC-003..."
 

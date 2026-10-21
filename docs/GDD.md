@@ -48,9 +48,11 @@ flowchart LR
 ### Detalhamento das Fases do Loop:
 1. **Investigação:**
    - A Caçadora explora zonas interconectadas (clareiras, ruínas, cavernas, arredores da vila) examinando vestígios deixados pela criatura: pegadas, carcaças, marcas de garras, secreções ou testemunhos.
-2. **Preparação:**
-   - Ao inspecionar pistas suficientes, o **Grimório** sintetiza a identidade e as vulnerabilidades do monstro alvo.
-   - Em pontos seguros (fogueiras/acampamentos ou antes do covil), o jogador configura sua *Build de Caça*: escolhe **Estilos de Luta** (ex.: Postura Rápida/Corte vs. Postura Pesada/Quebra-Guarda) e **Ferramentas/Óleos** específicos para explorar a fraqueza descoberta.
+   - **Pistas Falsas (*Red Herrings*) & Dedução Ativa:** O cenário também contém vestígios enganosos (de predadores menores, bandidos ou eventos naturais). Se o jogador desatento não analisar as descrições no Grimório e não descartar manualmente as pistas falsas, ele pode concluir a fraqueza errada e desperdiçar materiais escassos na fase de Preparação.
+2. **Preparação & Alquimia de Óleos:**
+   - Ao inspecionar pistas e filtrar vestígios falsos, o **Grimório** sintetiza a identidade, as vulnerabilidades do monstro alvo e a **fórmula alquímica do Óleo eficaz**.
+   - **Óleos Fabricáveis com Materiais:** Diferente de um simples seletor infinito, os Óleos (`IGNIS_OIL`, `VITRIOL_ACID`, etc.) exigem coleta/consumo de reagentes e materiais para serem sintetizados.
+   - Em pontos seguros (fogueiras/acampamentos ou antes do covil), o jogador configura sua *Build de Caça*: escolhe **Estilos de Luta** (ex.: Postura Rápida/Corte vs. Postura Pesada/Quebra-Guarda), fabrica os **Óleos** necessários e equipa **Ferramentas** específicas para explorar a fraqueza descoberta.
 3. **Infiltração:**
    - O caminho até o covil testa as ferramentas escolhidas em micro-desafios: pequenos puzzles ambientais (ex.: queimar teias densas, usar isca ou iluminação) e escaramuças contra monstros menores que introduzem parte da linguagem visual dos ataques do Boss.
 4. **Confronto:**

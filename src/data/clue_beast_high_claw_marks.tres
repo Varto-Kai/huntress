@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="ClueData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/clue_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+clue_id = &"beast_high_claw_marks"
+monster_id = &"agile_beast"
+title = "Marcas de Garras em Salto"
+evidence_description = "Sulcos triplos em troncos altos mostram que a fera ataca em rajadas rápidas. Pressioná-la com combos de 3 cortes em Postura Rápida + Óleo de Ignis desestabiliza seu equilíbrio."
+section_type = 2
+visual_shape = 2
+greybox_color = Color(0.607843, 0.34902, 0.713726, 1)
+is_false_lead = false
+concluded_style_weakness = 0
+concluded_style_resistance = 1
+concluded_element_weakness = 1
+concluded_oil_recipe = ""
+concluded_behavior_hint = "Esquive do bote inicial e encaixe o combo de 3 golpes em Corte Rápido + Ignis para causar Stagger."

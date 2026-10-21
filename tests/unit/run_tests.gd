@@ -1,12 +1,12 @@
 extends SceneTree
-## Runner CLI para execução headless de toda a suíte de testes do Projeto Huntress (SPEC-001 + SPEC-002).
+## Runner CLI para execução headless de toda a suíte de testes do Projeto Huntress (SPEC-001, SPEC-002 & SPEC-003).
 ## Uso: godot --headless --path . -s res://tests/unit/run_tests.gd
 
 
 func _init() -> void:
-	print("==================================================")
-	print("🧪 HUNTRESS SDD TEST RUNNER — SPEC-001 & SPEC-002")
-	print("==================================================")
+	print("==============================================================")
+	print("🧪 HUNTRESS SDD TEST RUNNER — SPEC-001, SPEC-002 & SPEC-003")
+	print("==============================================================")
 
 	var total_passed: int = 0
 	var total_failed: int = 0
@@ -16,6 +16,8 @@ func _init() -> void:
 		["TestPlayerStateMachine (SPEC-001)", TestPlayerStateMachine.new()],
 		["TestCombatDamageResolver (SPEC-002)", TestCombatDamageResolver.new()],
 		["TestCombatComponentsAndStates (SPEC-002)", TestCombatComponentsAndStates.new()],
+		["TestGrimoireTracker (SPEC-003)", TestGrimoireTracker.new()],
+		["TestInteractionAndClues (SPEC-003)", TestInteractionAndClues.new()],
 	]
 
 	for entry: Variant in suites:
@@ -27,9 +29,9 @@ func _init() -> void:
 		total_passed += int(res["passed"])
 		total_failed += int(res["failed"])
 
-	print("--------------------------------------------------")
+	print("--------------------------------------------------------------")
 	print("RESUMO TOTAL: %d PASS | %d FAIL" % [total_passed, total_failed])
-	print("==================================================")
+	print("==============================================================")
 
 	if total_failed > 0:
 		quit(1)

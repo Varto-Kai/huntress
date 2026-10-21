@@ -1,4 +1,4 @@
-[gd_scene load_steps=20 format=3]
+[gd_scene load_steps=23 format=3]
 
 [ext_resource type="Script" path="res://src/entities/player/player.gd" id="1_player"]
 [ext_resource type="Resource" path="res://src/data/default_player_movement.tres" id="2_cfg"]
@@ -17,12 +17,17 @@
 [ext_resource type="Script" path="res://src/entities/player/states/player_hurt_state.gd" id="15_hurt"]
 [ext_resource type="Resource" path="res://src/data/style_fast_steel.tres" id="16_fast_style"]
 [ext_resource type="Resource" path="res://src/data/style_heavy_impact.tres" id="17_heavy_style"]
+[ext_resource type="Script" path="res://src/components/player_interaction_component.gd" id="18_interact"]
+[ext_resource type="Script" path="res://src/components/grimoire_component.gd" id="19_grimoire"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_foot"]
 radius = 10.0
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_slash"]
 size = Vector2(26, 26)
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_interact"]
+radius = 44.0
 
 [node name="Player" type="CharacterBody2D"]
 motion_mode = 1
@@ -69,6 +74,18 @@ dodge_state = NodePath("../StateMachine/DodgeState")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="HurtboxComponent"]
 shape = SubResource("CircleShape2D_foot")
+
+[node name="PlayerInteractionComponent" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 8
+script = ExtResource("18_interact")
+interaction_radius = 44.0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="PlayerInteractionComponent"]
+shape = SubResource("CircleShape2D_interact")
+
+[node name="GrimoireComponent" type="Node" parent="."]
+script = ExtResource("19_grimoire")
 
 [node name="HealthComponent" type="Node" parent="."]
 script = ExtResource("12_health")

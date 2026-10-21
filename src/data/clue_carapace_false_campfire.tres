@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="ClueData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/clue_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+clue_id = &"carapace_false_campfire"
+monster_id = &"armored_carapace"
+title = "Cinzas de Acampamento com Sebo"
+evidence_description = "Restos de uma fogueira humana apagada há dias, com botas de couro queimadas e um frasco quebrado de sebo. Não há pegadas do monstro ao redor desta fogueira."
+section_type = 1
+visual_shape = 1
+greybox_color = Color(0.905882, 0.298039, 0.235294, 1)
+is_false_lead = true
+concluded_style_weakness = 0
+concluded_style_resistance = 1
+concluded_element_weakness = 1
+concluded_oil_recipe = "Óleo de Ignis (Fabricação Enganosa: 1x Sebo Inflamável + 1x Brasa Seca)"
+concluded_behavior_hint = ""

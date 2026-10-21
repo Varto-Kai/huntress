@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="ClueData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/clue_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+clue_id = &"carapace_molted_shell"
+monster_id = &"armored_carapace"
+title = "Fragmento de Carapaça Calcificada"
+evidence_description = "Placa quitinosa recém-desprendida pelo monstro. É imune ao calor comum, mas dissolve rapidamente em contato com compostos ácidos concentrados."
+section_type = 1
+visual_shape = 1
+greybox_color = Color(0.180392, 0.8, 0.443137, 1)
+is_false_lead = false
+concluded_style_weakness = 1
+concluded_style_resistance = 0
+concluded_element_weakness = 2
+concluded_oil_recipe = "Ácido de Vitríolo (Fabricação: 1x Bile Corrosiva + 1x Pó de Enxofre)"
+concluded_behavior_hint = ""

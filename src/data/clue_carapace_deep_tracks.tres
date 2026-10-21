@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="ClueData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/clue_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+clue_id = &"carapace_deep_tracks"
+monster_id = &"armored_carapace"
+title = "Pegadas Afundadas no Granito"
+evidence_description = "Rastros recentes com mais de 8cm de profundidade na pedra sólida. O peso colossal indica uma carapaça mineral espessa que deflete lâminas rápidas, exigindo golpes contundentes pesados."
+section_type = 0
+visual_shape = 0
+greybox_color = Color(0.952941, 0.611765, 0.0705882, 1)
+is_false_lead = false
+concluded_style_weakness = 1
+concluded_style_resistance = 0
+concluded_element_weakness = 0
+concluded_oil_recipe = ""
+concluded_behavior_hint = ""

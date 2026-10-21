@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="ClueData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/clue_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+clue_id = &"carapace_cracked_pillar"
+monster_id = &"armored_carapace"
+title = "Pilar Rachado por Investida"
+evidence_description = "Marcas de impacto mostram que a criatura trava as patas após uma investida pesada. Golpear com Postura Pesada + Vitríolo nessa janela multiplica o dano de Postura (Stagger)."
+section_type = 2
+visual_shape = 2
+greybox_color = Color(0.607843, 0.34902, 0.713726, 1)
+is_false_lead = false
+concluded_style_weakness = 1
+concluded_style_resistance = 0
+concluded_element_weakness = 2
+concluded_oil_recipe = ""
+concluded_behavior_hint = "Carapaça trava após investida: use Impacto Pesado + Ácido de Vitríolo para forçar BREAK (2.0x Stagger)."

@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="MonsterGrimoireEntryData" load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://src/data/monster_grimoire_entry_data.gd" id="1_script"]
+[ext_resource type="Resource" path="res://src/data/defense_agile_beast.tres" id="2_def"]
+[ext_resource type="Resource" path="res://src/data/clue_beast_light_fur.tres" id="3_c1"]
+[ext_resource type="Resource" path="res://src/data/clue_beast_false_boar_skull.tres" id="4_c2"]
+[ext_resource type="Resource" path="res://src/data/clue_beast_resin_blood.tres" id="5_c3"]
+[ext_resource type="Resource" path="res://src/data/clue_beast_high_claw_marks.tres" id="6_c4"]
+
+[resource]
+script = ExtResource("1_script")
+monster_id = &"agile_beast"
+display_name = "Fera Ágil da Clareira"
+subtitle = "Predador Noturno de Secreção Inflamável"
+defense_profile = ExtResource("2_def")
+available_clues = Array[Resource]([ExtResource("3_c1"), ExtResource("4_c2"), ExtResource("5_c3"), ExtResource("6_c4")])
+locked_placeholder_text = "???"

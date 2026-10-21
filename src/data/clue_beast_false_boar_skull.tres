@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="ClueData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/clue_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+clue_id = &"beast_false_boar_skull"
+monster_id = &"agile_beast"
+title = "Crânio Velho de Javali Couraçado"
+evidence_description = "Ossada esbranquiçada e coberta de musgo de um herbívoro morto no inverno passado. Não pertence ao predador atual da clareira, embora aparente ter ossos duros."
+section_type = 0
+visual_shape = 1
+greybox_color = Color(0.905882, 0.298039, 0.235294, 1)
+is_false_lead = true
+concluded_style_weakness = 1
+concluded_style_resistance = 0
+concluded_element_weakness = 0
+concluded_oil_recipe = ""
+concluded_behavior_hint = ""

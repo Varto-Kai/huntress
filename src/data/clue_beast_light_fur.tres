@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="ClueData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/clue_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+clue_id = &"beast_light_fur"
+monster_id = &"agile_beast"
+title = "Pelagem Espessa em Galhos Baixos"
+evidence_description = "Tufos de pelo escuro presos em arbustos sem qualquer vestígio de placas ósseas. A criatura é extremamente veloz, mas seu couro exposto cede facilmente a cortes rápidos de aço."
+section_type = 0
+visual_shape = 0
+greybox_color = Color(0.203922, 0.596078, 0.858824, 1)
+is_false_lead = false
+concluded_style_weakness = 0
+concluded_style_resistance = 1
+concluded_element_weakness = 0
+concluded_oil_recipe = ""
+concluded_behavior_hint = ""

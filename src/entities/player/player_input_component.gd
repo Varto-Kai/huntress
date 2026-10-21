@@ -2,14 +2,18 @@ class_name PlayerInputComponent
 extends Node
 ## Componente dedicado à captura do InputMap da Caçadora, normalização direcional,
 ## anulação de eixos opostos (EC-001), limpeza por perda de foco (EC-005),
-## Input Buffer de esquiva/ataque (EC-003, RF-006) e atalhos de Estilo/Óleo (SPEC-001 & SPEC-002).
+## Input Buffer de esquiva/ataque (SPEC-001/002) e comandos de Investigação/Grimório (SPEC-003).
 
 signal style_switch_requested()
 signal oil_switch_requested()
+signal interact_pressed()
+signal grimoire_toggle_requested()
 
 @export var config: PlayerMovementConfig
 
 var move_direction: Vector2 = Vector2.ZERO
+var is_interact_held: bool = false
+var gameplay_inputs_blocked: bool = false
 var _dodge_buffer_timer: float = 0.0
 var _attack_buffer_timer: float = 0.0
 var _window_focused: bool = true
@@ -23,6 +27,17 @@ func _physics_process(delta: float) -> void:
 
 	if not _window_focused:
 		move_direction = Vector2.ZERO
+		is_interact_held = false
+		return
+
+	if InputMap.has_action(&"toggle_grimoire") and Input.is_action_just_pressed(&"toggle_grimoire"):
+		grimoire_toggle_requested.emit()
+
+	if gameplay_inputs_blocked:
+		move_direction = Vector2.ZERO
+		is_interact_held = false
+		_dodge_buffer_timer = 0.0
+		_attack_buffer_timer = 0.0
 		return
 
 	var left_pressed: bool = Input.is_action_pressed(&"move_left")
@@ -40,6 +55,19 @@ func _physics_process(delta: float) -> void:
 		style_switch_requested.emit()
 	if InputMap.has_action(&"switch_oil") and Input.is_action_just_pressed(&"switch_oil"):
 		oil_switch_requested.emit()
+	if InputMap.has_action(&"interact"):
+		is_interact_held = Input.is_action_pressed(&"interact")
+		if Input.is_action_just_pressed(&"interact"):
+			interact_pressed.emit()
+
+
+func set_gameplay_inputs_blocked(blocked: bool) -> void:
+	gameplay_inputs_blocked = blocked
+	if blocked:
+		move_direction = Vector2.ZERO
+		is_interact_held = false
+		_dodge_buffer_timer = 0.0
+		_attack_buffer_timer = 0.0
 
 
 func _notification(what: int) -> void:
@@ -74,6 +102,8 @@ static func compute_normalized_direction(
 
 
 func register_dodge_press() -> void:
+	if gameplay_inputs_blocked:
+		return
 	var buffer_duration: float = 0.12
 	if config != null:
 		buffer_duration = config.dodge_input_buffer_time
@@ -81,11 +111,11 @@ func register_dodge_press() -> void:
 
 
 func has_buffered_dodge() -> bool:
-	return _dodge_buffer_timer > 0.0
+	return not gameplay_inputs_blocked and _dodge_buffer_timer > 0.0
 
 
 func consume_dodge_request() -> bool:
-	if _dodge_buffer_timer > 0.0:
+	if not gameplay_inputs_blocked and _dodge_buffer_timer > 0.0:
 		_dodge_buffer_timer = 0.0
 		return true
 	return false
@@ -96,6 +126,8 @@ func get_dodge_buffer_time_remaining() -> float:
 
 
 func register_attack_press() -> void:
+	if gameplay_inputs_blocked:
+		return
 	var buffer_duration: float = 0.18
 	if config != null:
 		buffer_duration = config.combo_input_buffer_time
@@ -103,11 +135,11 @@ func register_attack_press() -> void:
 
 
 func has_buffered_attack() -> bool:
-	return _attack_buffer_timer > 0.0
+	return not gameplay_inputs_blocked and _attack_buffer_timer > 0.0
 
 
 func consume_attack_request() -> bool:
-	if _attack_buffer_timer > 0.0:
+	if not gameplay_inputs_blocked and _attack_buffer_timer > 0.0:
 		_attack_buffer_timer = 0.0
 		return true
 	return false
@@ -120,5 +152,6 @@ func get_attack_buffer_time_remaining() -> float:
 func on_window_focus_lost() -> void:
 	_window_focused = false
 	move_direction = Vector2.ZERO
+	is_interact_held = false
 	_dodge_buffer_timer = 0.0
 	_attack_buffer_timer = 0.0

@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="ClueData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/clue_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+clue_id = &"beast_resin_blood"
+monster_id = &"agile_beast"
+title = "Secreção Resinosa nas Folhas"
+evidence_description = "Saliva oleosa e inflamável deixada pela fera ao marcar território. Entra em combustão instantânea ao contato com lâminas banhadas em compostos ígneos."
+section_type = 1
+visual_shape = 1
+greybox_color = Color(0.901961, 0.494118, 0.133333, 1)
+is_false_lead = false
+concluded_style_weakness = 0
+concluded_style_resistance = 1
+concluded_element_weakness = 1
+concluded_oil_recipe = "Óleo de Ignis (Fabricação: 1x Sebo Inflamável + 1x Brasa Seca)"
+concluded_behavior_hint = ""

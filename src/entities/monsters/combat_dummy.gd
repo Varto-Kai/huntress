@@ -1,11 +1,14 @@
 class_name CombatDummy
 extends CharacterBody2D
 ## Alvo tático Greybox reutilizável para validação de combate, Fraquezas/Resistências,
-## quebra de postura (Stagger / Break) e knockback (SPEC-002: RF-004, RF-010, SC-004).
+## quebra de postura (Stagger / Break), knockback (SPEC-002) e sincronização de
+## telemetria investigativa via Grimório (SPEC-003: Q4 / RF-005).
 
 signal dummy_hit_logged(dummy_name: String, resolution: Dictionary)
 
+@export var monster_id: StringName = &""
 @export var dummy_title: String = "Dummy Tático"
+@export var hide_telemetry_until_researched: bool = false
 @export var defense_profile: DefenseProfileData
 @export var movement_config: PlayerMovementConfig
 @export var base_color: Color = Color("#8E44AD")
@@ -24,6 +27,7 @@ signal dummy_hit_logged(dummy_name: String, resolution: Dictionary)
 var _flash_timer: float = 0.0
 var _respawn_timer: float = 0.0
 var _spawn_position: Vector2 = Vector2.ZERO
+var _telemetry_summary: String = ""
 
 
 func _ready() -> void:
@@ -52,11 +56,12 @@ func _ready() -> void:
 	stagger_component.stagger_ended.connect(_on_stagger_ended)
 	hurtbox_component.hit_received.connect(_on_hit_received)
 
+	if hide_telemetry_until_researched:
+		_telemetry_summary = "Fraqueza: ??? | Óleo: ???"
 	_update_visual_color()
 	_on_health_changed(health_component.current_health, health_component.max_health)
 	_on_stagger_changed(stagger_component.current_stagger, stagger_component.get_max_stagger())
-	if status_label != null:
-		status_label.text = dummy_title
+	_refresh_overhead_label()
 
 
 func _physics_process(delta: float) -> void:
@@ -71,11 +76,29 @@ func _physics_process(delta: float) -> void:
 			global_position = _spawn_position
 			health_component.reset_health()
 			stagger_component.reset_stagger()
-			if status_label != null:
-				status_label.text = dummy_title
+			_refresh_overhead_label()
 			_update_visual_color()
 
 	movement_component.apply_friction(delta)
+
+
+## Atualiza a telemetria acima do alvo com base no estado atual do Grimório (SPEC-003: Q4 / Q5).
+func apply_grimoire_state(state: Dictionary) -> void:
+	var style_sec: Dictionary = state.get("style_section", {}) as Dictionary
+	var oil_sec: Dictionary = state.get("oil_section", {}) as Dictionary
+	var style_txt: String = String(style_sec.get("style_weakness_text", "???"))
+	var oil_txt: String = String(oil_sec.get("element_weakness_text", "???"))
+	_telemetry_summary = "Fraqueza: %s\nÓleo: %s" % [style_txt, oil_txt]
+	_refresh_overhead_label()
+
+
+func _refresh_overhead_label() -> void:
+	if status_label == null:
+		return
+	if _telemetry_summary.is_empty():
+		status_label.text = dummy_title
+	else:
+		status_label.text = "%s\n%s" % [dummy_title, _telemetry_summary]
 
 
 func _on_hit_received(_attack_data: AttackData, resolution: Dictionary) -> void:
@@ -117,8 +140,7 @@ func _on_stagger_started(_duration: float) -> void:
 
 
 func _on_stagger_ended() -> void:
-	if status_label != null:
-		status_label.text = dummy_title
+	_refresh_overhead_label()
 	_update_visual_color()
 
 

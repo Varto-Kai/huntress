@@ -1,7 +1,7 @@
 class_name Player
 extends CharacterBody2D
-## Entidade raiz da Caçadora (Player) montada por composição (SPEC-001 & SPEC-002).
-## Conecta Locomoção, Esquiva, Combate (Hitbox/Hurtbox/Health/CombatStyle) e StateMachine.
+## Entidade raiz da Caçadora (Player) montada por composição (SPEC-001, SPEC-002 & SPEC-003).
+## Conecta Locomoção, Esquiva, Combate, Investigação (PlayerInteractionComponent) e Grimório (GrimoireComponent).
 
 @export var movement_config: PlayerMovementConfig
 
@@ -9,6 +9,8 @@ extends CharacterBody2D
 @onready var weapon_pivot: Node2D = get_node_or_null("WeaponPivot") as Node2D
 @onready var hitbox_component: HitboxComponent = get_node_or_null("WeaponPivot/HitboxComponent") as HitboxComponent
 @onready var hurtbox_component: HurtboxComponent = get_node_or_null("HurtboxComponent") as HurtboxComponent
+@onready var interaction_component: PlayerInteractionComponent = get_node_or_null("PlayerInteractionComponent") as PlayerInteractionComponent
+@onready var grimoire_component: GrimoireComponent = get_node_or_null("GrimoireComponent") as GrimoireComponent
 @onready var health_component: HealthComponent = get_node_or_null("HealthComponent") as HealthComponent
 @onready var combat_style_component: CombatStyleComponent = get_node_or_null("CombatStyleComponent") as CombatStyleComponent
 @onready var input_component: PlayerInputComponent = $PlayerInputComponent as PlayerInputComponent
@@ -61,6 +63,14 @@ func _ready() -> void:
 		hurtbox_component.health_component = health_component
 		hurtbox_component.dodge_state = dodge_state
 
+	if interaction_component != null:
+		interaction_component.state_machine = state_machine
+		interaction_component.input_component = input_component
+		if not input_component.interact_pressed.is_connected(_on_interact_pressed):
+			input_component.interact_pressed.connect(_on_interact_pressed)
+		if grimoire_component != null and not interaction_component.clue_inspection_completed.is_connected(grimoire_component.register_clue_from_world):
+			interaction_component.clue_inspection_completed.connect(grimoire_component.register_clue_from_world)
+
 	if health_component != null:
 		if not health_component.damaged.is_connected(_on_player_damaged):
 			health_component.damaged.connect(_on_player_damaged)
@@ -80,14 +90,20 @@ func _ready() -> void:
 		greybox_visual.bind_components(state_machine, movement_component, dodge_state, attack_state, health_component)
 
 
+func _on_interact_pressed() -> void:
+	if interaction_component != null:
+		interaction_component.try_start_interaction()
+
+
 func _on_player_damaged(_amount: float, knockback_vector: Vector2, _matchup: int) -> void:
+	if interaction_component != null:
+		interaction_component.cancel_active_inspection()
 	if hurt_state != null:
 		hurt_state.setup_knockback(knockback_vector)
 		state_machine.transition_to(&"HurtState")
 
 
 func _on_player_health_depleted() -> void:
-	# Em ambiente de validação Greybox, restaura a vida após zerar para não interromper o teste
 	if health_component != null:
 		health_component.reset_health()
 

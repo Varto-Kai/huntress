@@ -14,6 +14,10 @@ extends CharacterBody2D
 @onready var inventory_component: InventoryComponent = get_node_or_null("InventoryComponent") as InventoryComponent
 @onready var health_component: HealthComponent = get_node_or_null("HealthComponent") as HealthComponent
 @onready var combat_style_component: CombatStyleComponent = get_node_or_null("CombatStyleComponent") as CombatStyleComponent
+
+var preparation_data: PreparationData:
+	get:
+		return inventory_component.preparation_data if inventory_component != null else null
 @onready var input_component: PlayerInputComponent = $PlayerInputComponent as PlayerInputComponent
 @onready var movement_component: MovementComponent = $MovementComponent as MovementComponent
 @onready var state_machine: StateMachine = $StateMachine as StateMachine

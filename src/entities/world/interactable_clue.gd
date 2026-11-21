@@ -1,6 +1,6 @@
 class_name InteractableClue
-extends Area2D
-## Entidade física de pista posicionada no mapa em Greybox (SPEC-003: RF-002, RF-008).
+extends Interactable
+## Entidade física de pista posicionada no mapa em Greybox (SPEC-003: RF-002, RF-008 & Issue #25).
 ## Exibe rótulo flutuante de alta legibilidade apenas quando focada, evitando poluição e sobreposição visual.
 
 signal clue_inspected(clue_data: ClueData)
@@ -18,15 +18,17 @@ signal clue_inspected(clue_data: ClueData)
 @onready var prompt_label: Label = get_node_or_null("PromptLabel") as Label
 
 var is_inspected: bool = false
-var is_focused: bool = false
 var _inspect_progress_ratio: float = 0.0
 
 
+func _init() -> void:
+	interaction_type = InteractionType.CLUE
+	base_priority = 100
+	hold_duration = inspect_duration
+
+
 func _ready() -> void:
-	collision_layer = 8
-	collision_mask = 0
-	monitoring = false
-	monitorable = true
+	super._ready()
 
 	if clue_data != null:
 		clue_data.sanitize()
@@ -36,8 +38,37 @@ func _ready() -> void:
 	_refresh_visuals()
 
 
+func can_interact(_interactor: Node2D) -> bool:
+	return true
+
+
+func interact(_interactor: Node2D) -> void:
+	complete_inspection()
+
+
+func cancel_interaction(interactor: Node2D) -> void:
+	super.cancel_interaction(interactor)
+	set_inspection_progress(0.0)
+
+
+func get_interaction_prompt() -> String:
+	var title_str: String = clue_data.title if clue_data != null else "Vestígio"
+	var action_tag: String = "[E] Reler:" if is_inspected else "[E] Inspecionar:"
+	return "%s %s" % [action_tag, title_str]
+
+
+func get_effective_priority() -> int:
+	if is_inspected:
+		return 5
+	return base_priority
+
+
+func get_hold_duration() -> float:
+	return maxf(0.0, inspect_duration)
+
+
 func set_focused(focused: bool) -> void:
-	is_focused = focused
+	super.set_focused(focused)
 	if not focused:
 		_inspect_progress_ratio = 0.0
 	_refresh_visuals()
@@ -45,7 +76,17 @@ func set_focused(focused: bool) -> void:
 
 func set_inspection_progress(ratio: float) -> void:
 	_inspect_progress_ratio = clampf(ratio, 0.0, 1.0)
+	interaction_progress_changed.emit(_inspect_progress_ratio)
 	_refresh_visuals()
+
+
+func set_interaction_progress(ratio: float) -> void:
+	set_inspection_progress(ratio)
+
+
+func complete_interaction(interactor: Node2D) -> Variant:
+	start_interaction(interactor)
+	return complete_inspection()
 
 
 func complete_inspection() -> ClueData:
@@ -54,6 +95,7 @@ func complete_inspection() -> ClueData:
 	_refresh_visuals()
 	if clue_data != null:
 		clue_inspected.emit(clue_data)
+	interaction_completed.emit(null, clue_data)
 	return clue_data
 
 
@@ -97,6 +139,4 @@ func _refresh_visuals() -> void:
 	if prompt_label != null:
 		prompt_label.visible = is_focused
 		if is_focused:
-			var title_str: String = clue_data.title if clue_data != null else "Vestígio"
-			var action_tag: String = "[E] Reler:" if is_inspected else "[E] Inspecionar:"
-			prompt_label.text = "%s %s" % [action_tag, title_str]
+			prompt_label.text = get_interaction_prompt()

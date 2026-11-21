@@ -1,6 +1,6 @@
 class_name InteractableReagent
-extends Area2D
-## Entidade física de reagente alquímico coletável no mapa em Greybox (SPEC-004: RF-003, RF-008, EC-002).
+extends Interactable
+## Entidade física de reagente alquímico coletável no mapa em Greybox (SPEC-004: RF-003, RF-008, EC-002 & Issue #25).
 ## Suporta esgotamento após coleta e reabastecimento via respawn_reagent() ao descansar na Fogueira.
 
 signal reagent_picked_up(reagent_data: ReagentData, amount: int)
@@ -12,18 +12,20 @@ signal reagent_picked_up(reagent_data: ReagentData, amount: int)
 @export var depleted_color: Color = Color("#34495E")
 
 var is_collected: bool = false
-var is_focused: bool = false
 
 @onready var visual_polygon: Polygon2D = get_node_or_null("ReagentVisual") as Polygon2D
 @onready var prompt_bg: ColorRect = get_node_or_null("PromptBg") as ColorRect
 @onready var prompt_label: Label = get_node_or_null("PromptLabel") as Label
 
 
+func _init() -> void:
+	interaction_type = InteractionType.REAGENT
+	base_priority = 10
+	hold_duration = 0.0
+
+
 func _ready() -> void:
-	collision_layer = 8
-	collision_mask = 0
-	monitoring = false
-	monitorable = true
+	super._ready()
 
 	if reagent_data != null:
 		reagent_data.sanitize()
@@ -32,19 +34,48 @@ func _ready() -> void:
 	_refresh_visuals()
 
 
+func can_interact(_interactor: Node2D) -> bool:
+	return not is_collected and reagent_data != null and reagent_data.is_valid()
+
+
+func interact(_interactor: Node2D) -> void:
+	collect_reagent()
+
+
+func cancel_interaction(_interactor: Node2D) -> void:
+	pass
+
+
+func get_interaction_prompt() -> String:
+	var r_name: String = reagent_data.display_name if reagent_data != null else "Reagente"
+	return "[E] Coletar %dx %s" % [maxi(1, pickup_amount), r_name]
+
+
+func get_effective_priority() -> int:
+	if not can_interact(null):
+		return -1
+	return base_priority
+
+
 func set_focused(focused: bool) -> void:
-	is_focused = focused
+	super.set_focused(focused)
 	_refresh_visuals()
 
 
 func collect_reagent() -> Dictionary:
-	if is_collected or reagent_data == null or not reagent_data.is_valid():
+	if not can_interact(null):
 		return {"collected": false, "reagent": null, "amount": 0}
 	is_collected = true
 	var amt: int = maxi(1, pickup_amount)
 	_refresh_visuals()
 	reagent_picked_up.emit(reagent_data, amt)
+	interaction_completed.emit(null, {"reagent": reagent_data, "amount": amt})
 	return {"collected": true, "reagent": reagent_data, "amount": amt}
+
+
+func complete_interaction(interactor: Node2D) -> Variant:
+	start_interaction(interactor)
+	return collect_reagent()
 
 
 func respawn_reagent() -> void:
@@ -70,5 +101,4 @@ func _refresh_visuals() -> void:
 	if prompt_label != null:
 		prompt_label.visible = show_prompt
 		if show_prompt:
-			var r_name: String = reagent_data.display_name if reagent_data != null else "Reagente"
-			prompt_label.text = "[E] Coletar %dx %s" % [maxi(1, pickup_amount), r_name]
+			prompt_label.text = get_interaction_prompt()

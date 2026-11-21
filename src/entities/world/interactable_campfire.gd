@@ -1,6 +1,6 @@
 class_name InteractableCampfire
-extends Area2D
-## Estação de Preparação (Fogueira / Bancada de Alquimia) posicionada no mapa em Greybox (SPEC-004: RF-003, RF-006).
+extends Interactable
+## Estação de Preparação (Fogueira / Bancada de Alquimia) posicionada no mapa em Greybox (SPEC-004: RF-003, RF-006 & Issue #25).
 
 signal campfire_activated(campfire: InteractableCampfire)
 
@@ -9,29 +9,57 @@ signal campfire_activated(campfire: InteractableCampfire)
 @export var flame_color: Color = Color("#E67E22")
 @export var focused_flame_color: Color = Color("#00FFFF")
 
-var is_focused: bool = false
-
 @onready var base_visual: Polygon2D = get_node_or_null("CampfireBaseVisual") as Polygon2D
 @onready var flame_visual: Polygon2D = get_node_or_null("FlameVisual") as Polygon2D
 @onready var prompt_bg: ColorRect = get_node_or_null("PromptBg") as ColorRect
 @onready var prompt_label: Label = get_node_or_null("PromptLabel") as Label
 
 
+func _init() -> void:
+	interaction_type = InteractionType.CAMPFIRE
+	base_priority = 50
+	hold_duration = 0.0
+
+
 func _ready() -> void:
-	collision_layer = 8
-	collision_mask = 0
-	monitoring = false
-	monitorable = true
+	super._ready()
 	_refresh_visuals()
 
 
+func can_interact(_interactor: Node2D) -> bool:
+	return true
+
+
+func interact(_interactor: Node2D) -> void:
+	activate_campfire()
+
+
+func cancel_interaction(_interactor: Node2D) -> void:
+	pass
+
+
+func get_interaction_prompt() -> String:
+	return "[E] %s (Grimório & Bancada)" % campfire_title
+
+
+func get_effective_priority() -> int:
+	return base_priority
+
+
 func set_focused(focused: bool) -> void:
-	is_focused = focused
+	super.set_focused(focused)
 	_refresh_visuals()
 
 
 func activate_campfire() -> void:
 	campfire_activated.emit(self)
+	interaction_completed.emit(null, self)
+
+
+func complete_interaction(interactor: Node2D) -> Variant:
+	start_interaction(interactor)
+	activate_campfire()
+	return self
 
 
 func _refresh_visuals() -> void:
@@ -45,4 +73,4 @@ func _refresh_visuals() -> void:
 	if prompt_label != null:
 		prompt_label.visible = is_focused
 		if is_focused:
-			prompt_label.text = "[E] %s (Grimório & Bancada)" % campfire_title
+			prompt_label.text = get_interaction_prompt()

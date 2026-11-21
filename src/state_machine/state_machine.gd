@@ -31,6 +31,7 @@ func initialize() -> void:
 
 	if initial_state != null:
 		current_state = initial_state
+		current_state.is_active = true
 		current_state.enter()
 		state_changed.emit(&"", StringName(current_state.name))
 
@@ -58,15 +59,34 @@ func transition_to(target_state_name: StringName) -> bool:
 	if next_state == null or next_state == current_state:
 		return false
 
+	if current_state != null and not current_state.can_be_interrupted_by(next_state):
+		return false
+
+	if not next_state.can_enter(current_state):
+		return false
+
 	var previous_name: StringName = &""
 	if current_state != null:
 		previous_name = StringName(current_state.name)
+		current_state.is_active = false
 		current_state.exit()
 
 	current_state = next_state
+	current_state.is_active = true
 	current_state.enter()
 	state_changed.emit(previous_name, StringName(current_state.name))
 	return true
+
+
+## Alias para transition_to.
+func change_state(next_state_name: StringName) -> bool:
+	return transition_to(next_state_name)
+
+
+## Retorna a instância de State associada ao nome ou null se não encontrada.
+func get_state(state_name: StringName) -> State:
+	var key: StringName = StringName(String(state_name).to_lower())
+	return _states.get(key, null)
 
 
 func get_current_state_name() -> StringName:

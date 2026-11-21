@@ -40,11 +40,9 @@ func _ready() -> void:
 
 	idle_state.movement_component = movement_component
 	idle_state.input_component = input_component
-	idle_state.dodge_state = dodge_state
 
 	move_state.movement_component = movement_component
 	move_state.input_component = input_component
-	move_state.dodge_state = dodge_state
 
 	dodge_state.movement_component = movement_component
 	dodge_state.input_component = input_component
@@ -57,7 +55,6 @@ func _ready() -> void:
 		attack_state.combat_style_component = combat_style_component
 		attack_state.hitbox_component = hitbox_component
 		attack_state.weapon_pivot = weapon_pivot
-		attack_state.dodge_state = dodge_state
 
 	if hurt_state != null:
 		hurt_state.movement_component = movement_component

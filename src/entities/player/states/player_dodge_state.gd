@@ -23,18 +23,25 @@ var _invulnerability_duration: float = 0.16
 var _cooldown_timer: float = 0.0
 var _is_invulnerable: bool = false
 var _is_backstep: bool = false
-var _is_active: bool = false
 
 
 func _physics_process(delta: float) -> void:
 	# O cooldown decresce mesmo quando o estado ativo na StateMachine é Idle ou Move
-	if not _is_active and _cooldown_timer > 0.0:
+	if not is_active and _cooldown_timer > 0.0:
 		_cooldown_timer = maxf(0.0, _cooldown_timer - delta)
 		dodge_cooldown_updated.emit(_cooldown_timer)
 
 
 func can_dodge() -> bool:
-	return not _is_active and _cooldown_timer <= 0.0
+	return not is_active and _cooldown_timer <= 0.0
+
+
+func can_enter(from_state: State) -> bool:
+	if not can_dodge():
+		return false
+	if from_state != null and not from_state.can_be_interrupted_by(self):
+		return false
+	return true
 
 
 func is_invulnerable() -> bool:
@@ -50,8 +57,11 @@ func get_cooldown_remaining() -> float:
 
 
 func enter() -> void:
-	_is_active = true
+	super.enter()
 	_elapsed_time = 0.0
+
+	if input_component != null:
+		input_component.consume_dodge_request()
 
 	if config != null:
 		config.sanitize()
@@ -125,13 +135,13 @@ func physics_update(delta: float) -> void:
 
 
 func exit() -> void:
+	super.exit()
 	if _is_invulnerable:
 		_is_invulnerable = false
 		invulnerability_ended.emit()
 		if health_component != null:
 			health_component.revoke_invulnerability(&"dodge")
 
-	_is_active = false
 	if config != null:
 		_cooldown_timer = config.dodge_cooldown
 	else:

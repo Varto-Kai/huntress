@@ -13,6 +13,8 @@ func run_all() -> Dictionary:
 	_test_idle_backstep_preserves_facing_ec002(results, failures)
 	_test_iframes_and_recovery_curve_rf006(results, failures)
 	_test_cooldown_and_input_buffer_ec003(results, failures)
+	_test_bidirectional_transition_negotiation_issue24(results, failures)
+	_test_player_states_is_active_and_dodge_can_enter_issue24(results, failures)
 
 	return {"passed": results.size(), "failed": failures.size(), "results": results, "failures": failures}
 
@@ -48,10 +50,8 @@ func _build_test_rig() -> Dictionary:
 
 	idle_state.movement_component = movement
 	idle_state.input_component = input_comp
-	idle_state.dodge_state = dodge_state
 	move_state.movement_component = movement
 	move_state.input_component = input_comp
-	move_state.dodge_state = dodge_state
 	dodge_state.movement_component = movement
 	dodge_state.input_component = input_comp
 	dodge_state.config = config
@@ -201,3 +201,142 @@ func _test_cooldown_and_input_buffer_ec003(results: Array[String], failures: Arr
 		failures
 	)
 	_free_rig(rig)
+
+
+class MockTestState extends State:
+	var allow_interrupt: bool = true
+	var allow_enter_flag: bool = true
+
+	func can_be_interrupted_by(_to_state: State) -> bool:
+		return allow_interrupt
+
+	func can_enter(_from_state: State) -> bool:
+		return allow_enter_flag
+
+
+func _test_bidirectional_transition_negotiation_issue24(results: Array[String], failures: Array[String]) -> void:
+	var sm: StateMachine = StateMachine.new()
+	var state_a: MockTestState = MockTestState.new()
+	var state_b: MockTestState = MockTestState.new()
+	state_a.name = "StateA"
+	state_b.name = "StateB"
+	sm.add_child(state_a)
+	sm.add_child(state_b)
+	sm.initial_state = state_a
+	sm.initialize()
+
+	_assert_true(
+		sm.get_current_state_name() == &"StateA" and state_a.is_active and not state_b.is_active,
+		"Issue #24: Estado inicial fica ativo (is_active = true) e outros inativos (is_active = false)",
+		results,
+		failures
+	)
+
+	# 1. can_be_interrupted_by bloqueia transição quando retorna false
+	state_a.allow_interrupt = false
+	state_b.allow_enter_flag = true
+	var transitioned: bool = sm.transition_to(&"StateB")
+	_assert_true(
+		not transitioned and sm.get_current_state_name() == &"StateA" and state_a.is_active and not state_b.is_active,
+		"Issue #24: Transição é rejeitada quando current_state.can_be_interrupted_by() retorna false",
+		results,
+		failures
+	)
+
+	# 2. can_enter bloqueia transição quando retorna false
+	state_a.allow_interrupt = true
+	state_b.allow_enter_flag = false
+	transitioned = sm.transition_to(&"StateB")
+	_assert_true(
+		not transitioned and sm.get_current_state_name() == &"StateA" and state_a.is_active and not state_b.is_active,
+		"Issue #24: Transição é rejeitada quando target_state.can_enter() retorna false",
+		results,
+		failures
+	)
+
+	# 3. Transição bem-sucedida quando ambos concordam (protocolo bidirecional)
+	state_a.allow_interrupt = true
+	state_b.allow_enter_flag = true
+	transitioned = sm.transition_to(&"StateB")
+	_assert_true(
+		transitioned and sm.get_current_state_name() == &"StateB" and not state_a.is_active and state_b.is_active,
+		"Issue #24: Transição sucede quando can_be_interrupted_by e can_enter retornam true, atualizando is_active",
+		results,
+		failures
+	)
+
+	# 4. change_state alias preservando protocolo bidirecional
+	state_b.allow_interrupt = true
+	state_a.allow_enter_flag = true
+	var changed: bool = sm.change_state(&"StateA")
+	_assert_true(
+		changed and sm.get_current_state_name() == &"StateA" and state_a.is_active and not state_b.is_active,
+		"Issue #24: change_state funciona como alias para transition_to preservando protocolo bidirecional",
+		results,
+		failures
+	)
+
+	sm.free()
+
+
+func _test_player_states_is_active_and_dodge_can_enter_issue24(results: Array[String], failures: Array[String]) -> void:
+	var rig: Dictionary = _build_test_rig()
+	var sm: StateMachine = rig["sm"] as StateMachine
+	var input_comp: PlayerInputComponent = rig["input"] as PlayerInputComponent
+	var dodge: PlayerDodgeState = rig["dodge"] as PlayerDodgeState
+	var idle: State = sm.get_state(&"IdleState")
+	var move: State = sm.get_state(&"MoveState")
+
+	# Lifecycle no rig da jogadora
+	_assert_true(
+		idle.is_active and not move.is_active and not dodge.is_active,
+		"Issue #24: Player StateMachine inicia com apenas IdleState.is_active == true",
+		results,
+		failures
+	)
+
+	input_comp.move_direction = Vector2.RIGHT
+	sm._physics_process(0.016)
+	_assert_true(
+		not idle.is_active and move.is_active and not dodge.is_active,
+		"Issue #24: Transição para MoveState desativa IdleState e ativa MoveState via is_active",
+		results,
+		failures
+	)
+
+	input_comp.register_dodge_press()
+	sm._physics_process(0.016)
+	_assert_true(
+		not move.is_active and dodge.is_active,
+		"Issue #24: Transição para DodgeState desativa MoveState e ativa DodgeState via is_active",
+		results,
+		failures
+	)
+
+	# Aguarda término da esquiva
+	sm._physics_process(0.25)
+	# input é Vector2.RIGHT, então retorna para MoveState
+	_assert_true(
+		not dodge.is_active and move.is_active,
+		"Issue #24: Término de esquiva desativa DodgeState.is_active",
+		results,
+		failures
+	)
+
+	# Enquanto esquiva estiver em cooldown, dodge.can_enter(move) é false e bloqueia transição
+	_assert_true(
+		not dodge.can_enter(move),
+		"Issue #24: PlayerDodgeState.can_enter() retorna false durante o cooldown",
+		results,
+		failures
+	)
+	var blocked_transition: bool = sm.transition_to(&"DodgeState")
+	_assert_true(
+		not blocked_transition and sm.get_current_state_name() == &"MoveState" and move.is_active and not dodge.is_active,
+		"Issue #24: StateMachine bloqueia transição para DodgeState enquanto can_enter() for false",
+		results,
+		failures
+	)
+
+	_free_rig(rig)
+

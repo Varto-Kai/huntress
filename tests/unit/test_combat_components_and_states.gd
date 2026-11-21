@@ -56,10 +56,8 @@ func _build_combat_rig() -> Dictionary:
 
 	idle_state.movement_component = movement
 	idle_state.input_component = input_comp
-	idle_state.dodge_state = dodge_state
 	move_state.movement_component = movement
 	move_state.input_component = input_comp
-	move_state.dodge_state = dodge_state
 	dodge_state.movement_component = movement
 	dodge_state.input_component = input_comp
 	dodge_state.config = config
@@ -69,7 +67,6 @@ func _build_combat_rig() -> Dictionary:
 	attack_state.combat_style_component = style_comp
 	attack_state.hitbox_component = hitbox
 	attack_state.weapon_pivot = weapon_pivot
-	attack_state.dodge_state = dodge_state
 	hurt_state.movement_component = movement
 	hurt_state.input_component = input_comp
 	hurt_state.config = config

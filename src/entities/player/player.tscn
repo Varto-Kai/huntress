@@ -112,17 +112,15 @@ config = ExtResource("2_cfg")
 script = ExtResource("6_sm")
 initial_state = NodePath("IdleState")
 
-[node name="IdleState" type="Node" parent="StateMachine" node_paths=PackedStringArray("movement_component", "input_component", "dodge_state")]
+[node name="IdleState" type="Node" parent="StateMachine" node_paths=PackedStringArray("movement_component", "input_component")]
 script = ExtResource("7_idle")
 movement_component = NodePath("../../MovementComponent")
 input_component = NodePath("../../PlayerInputComponent")
-dodge_state = NodePath("../DodgeState")
 
-[node name="MoveState" type="Node" parent="StateMachine" node_paths=PackedStringArray("movement_component", "input_component", "dodge_state")]
+[node name="MoveState" type="Node" parent="StateMachine" node_paths=PackedStringArray("movement_component", "input_component")]
 script = ExtResource("8_move")
 movement_component = NodePath("../../MovementComponent")
 input_component = NodePath("../../PlayerInputComponent")
-dodge_state = NodePath("../DodgeState")
 
 [node name="DodgeState" type="Node" parent="StateMachine" node_paths=PackedStringArray("movement_component", "input_component", "health_component")]
 script = ExtResource("9_dodge")
@@ -131,14 +129,13 @@ input_component = NodePath("../../PlayerInputComponent")
 health_component = NodePath("../../HealthComponent")
 config = ExtResource("2_cfg")
 
-[node name="AttackState" type="Node" parent="StateMachine" node_paths=PackedStringArray("movement_component", "input_component", "combat_style_component", "hitbox_component", "weapon_pivot", "dodge_state")]
+[node name="AttackState" type="Node" parent="StateMachine" node_paths=PackedStringArray("movement_component", "input_component", "combat_style_component", "hitbox_component", "weapon_pivot")]
 script = ExtResource("14_attack")
 movement_component = NodePath("../../MovementComponent")
 input_component = NodePath("../../PlayerInputComponent")
 combat_style_component = NodePath("../../CombatStyleComponent")
 hitbox_component = NodePath("../../WeaponPivot/HitboxComponent")
 weapon_pivot = NodePath("../../WeaponPivot")
-dodge_state = NodePath("../DodgeState")
 
 [node name="HurtState" type="Node" parent="StateMachine" node_paths=PackedStringArray("movement_component", "input_component")]
 script = ExtResource("15_hurt")

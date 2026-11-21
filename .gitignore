@@ -22,3 +22,7 @@ Thumbs.db
 .vscode/
 .idea/
 *.log
+
+# Local git worktrees
+worktrees/
+

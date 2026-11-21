@@ -18,7 +18,6 @@ signal attack_finished()
 @export var combat_style_component: CombatStyleComponent
 @export var hitbox_component: HitboxComponent
 @export var weapon_pivot: Node2D
-@export var dodge_state: PlayerDodgeState
 
 var current_phase: Phase = Phase.WINDUP
 var current_step_index: int = 0
@@ -34,13 +33,24 @@ func _ready() -> void:
 		hitbox_component.hit_landed.connect(_on_hitbox_hit_landed)
 
 
+func can_be_interrupted_by(to_state: State) -> bool:
+	if to_state == null:
+		return true
+	var target_name: String = String(to_state.name).to_lower()
+	if target_name == "dodgestate":
+		return current_phase == Phase.WINDUP or current_phase == Phase.RECOVERY
+	return true
+
+
 func enter() -> void:
+	super.enter()
 	if hitbox_component != null and not hitbox_component.hit_landed.is_connected(_on_hitbox_hit_landed):
 		hitbox_component.hit_landed.connect(_on_hitbox_hit_landed)
 	_start_combo_step(0)
 
 
 func exit() -> void:
+	super.exit()
 	_hitstop_timer = 0.0
 	_combo_queued = false
 	if hitbox_component != null:
@@ -166,11 +176,9 @@ func _apply_phase_movement(delta: float) -> void:
 
 
 func _try_dodge_cancel() -> bool:
-	if input_component != null and dodge_state != null:
-		if input_component.has_buffered_dodge() and dodge_state.can_dodge():
-			input_component.consume_dodge_request()
-			transition_requested.emit(self, &"DodgeState")
-			return true
+	if input_component != null and input_component.has_buffered_dodge():
+		transition_requested.emit(self, &"DodgeState")
+		return not is_active
 	return false
 
 

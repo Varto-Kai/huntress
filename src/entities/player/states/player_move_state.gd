@@ -5,14 +5,12 @@ extends State
 
 @export var movement_component: MovementComponent
 @export var input_component: PlayerInputComponent
-@export var dodge_state: PlayerDodgeState
 
 
 func physics_update(delta: float) -> void:
-	if input_component != null and dodge_state != null:
-		if input_component.has_buffered_dodge() and dodge_state.can_dodge():
-			input_component.consume_dodge_request()
-			transition_requested.emit(self, &"DodgeState")
+	if input_component != null and input_component.has_buffered_dodge():
+		transition_requested.emit(self, &"DodgeState")
+		if not is_active:
 			return
 
 	if input_component != null and input_component.has_buffered_attack():

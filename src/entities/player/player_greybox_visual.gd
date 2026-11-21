@@ -109,7 +109,7 @@ func _on_attack_phase_changed(phase_name: StringName) -> void:
 
 func _on_post_hit_invulnerability_changed(is_invuln: bool) -> void:
 	if _health_component != null:
-		_is_post_hit_invulnerable = _health_component.is_invulnerable(&"hit_recovery") or _health_component.is_invulnerable(&"post_hit")
+		_is_post_hit_invulnerable = _health_component.is_invulnerable(&"post_hit")
 	else:
 		_is_post_hit_invulnerable = is_invuln
 	_blink_accumulator = 0.0

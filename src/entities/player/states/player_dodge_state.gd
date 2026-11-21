@@ -39,7 +39,7 @@ func can_dodge() -> bool:
 func can_enter(from_state: State) -> bool:
 	if not can_dodge():
 		return false
-	if from_state != null and not from_state.can_be_interrupted_by(self):
+	if from_state != null and not from_state.can_be_interrupted_by(&"DodgeState"):
 		return false
 	return true
 

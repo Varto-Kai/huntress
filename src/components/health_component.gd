@@ -70,22 +70,7 @@ func is_invulnerable_against(pierces_tags: Array[StringName]) -> bool:
 
 
 ## Concede um lease temporário de invulnerabilidade identificado por tag.
-## Suporta assinaturas polimórficas: (tag, duration) ou (duration, tag).
-func grant_invulnerability(param1: Variant, param2: Variant = null) -> void:
-	var tag: StringName = &"default"
-	var duration: float = 0.0
-
-	if param1 is StringName or param1 is String:
-		tag = StringName(param1)
-		if param2 is float or param2 is int:
-			duration = float(param2)
-	elif param1 is float or param1 is int:
-		duration = float(param1)
-		if param2 is StringName or param2 is String:
-			tag = StringName(param2)
-		elif param2 == null:
-			tag = &"default"
-
+func grant_invulnerability(tag: StringName, duration: float) -> void:
 	if duration <= 0.0:
 		return
 
@@ -132,7 +117,7 @@ func apply_damage(
 		_is_dead = true
 		health_depleted.emit()
 	elif post_hit_invulnerability_duration > 0.0:
-		grant_invulnerability(&"hit_recovery", post_hit_invulnerability_duration)
+		grant_invulnerability(&"post_hit", post_hit_invulnerability_duration)
 
 	return true
 

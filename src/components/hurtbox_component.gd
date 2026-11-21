@@ -10,7 +10,6 @@ signal hit_ignored(attack_data: AttackData)
 @export var health_component: HealthComponent
 @export var stagger_component: StaggerComponent
 @export var defense_profile: DefenseProfileData
-@export var post_hit_mercy_duration: float = 0.0
 
 
 ## Verifica se a entidade está invulnerável via HealthComponent centralizado.
@@ -63,9 +62,6 @@ func receive_attack(attack_data: AttackData) -> Dictionary:
 	if not damage_applied:
 		hit_ignored.emit(attack_data)
 		return {"applied": false, "reason": "health_rejected"}
-
-	if post_hit_mercy_duration > 0.0 and health_component != null:
-		health_component.grant_invulnerability(&"hit_recovery", post_hit_mercy_duration)
 
 	var triggered_stagger: bool = false
 	if stagger_component != null:

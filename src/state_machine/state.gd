@@ -35,7 +35,7 @@ func can_enter(_from_state: State) -> bool:
 	return true
 
 
-## Retorna se este estado permite ser interrompido por _to_state.
-func can_be_interrupted_by(_to_state: State) -> bool:
+## Retorna se este estado permite ser interrompido por _target_state_name.
+func can_be_interrupted_by(_target_state_name: StringName) -> bool:
 	return true
 

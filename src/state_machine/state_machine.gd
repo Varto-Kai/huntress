@@ -59,7 +59,7 @@ func transition_to(target_state_name: StringName) -> bool:
 	if next_state == null or next_state == current_state:
 		return false
 
-	if current_state != null and not current_state.can_be_interrupted_by(next_state):
+	if current_state != null and not current_state.can_be_interrupted_by(target_state_name):
 		return false
 
 	if not next_state.can_enter(current_state):

@@ -207,7 +207,7 @@ class MockTestState extends State:
 	var allow_interrupt: bool = true
 	var allow_enter_flag: bool = true
 
-	func can_be_interrupted_by(_to_state: State) -> bool:
+	func can_be_interrupted_by(_target_state_name: StringName) -> bool:
 		return allow_interrupt
 
 	func can_enter(_from_state: State) -> bool:

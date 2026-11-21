@@ -33,11 +33,8 @@ func _ready() -> void:
 		hitbox_component.hit_landed.connect(_on_hitbox_hit_landed)
 
 
-func can_be_interrupted_by(to_state: State) -> bool:
-	if to_state == null:
-		return true
-	var target_name: String = String(to_state.name).to_lower()
-	if target_name == "dodgestate":
+func can_be_interrupted_by(target_state_name: StringName) -> bool:
+	if String(target_state_name).to_lower() == "dodgestate":
 		return current_phase == Phase.WINDUP or current_phase == Phase.RECOVERY
 	return true
 

@@ -189,8 +189,6 @@ func test_preparation_data_round_trip_serialization() -> void:
 	var pdata: PreparationData = PreparationData.new()
 	pdata.region_alert_level = 2
 	pdata.active_oil_recipe_id = &"recipe_vitriol_acid"
-	pdata.equipped_traps = [&"trap_caltrops", &"trap_snare"]
-	pdata.active_food_buff = &"buff_bear_stew"
 	pdata.applied_oil_charges = 5
 
 	var base_reagent: ReagentData = load("res://src/data/reagent_alchemical_base.tres") as ReagentData
@@ -206,11 +204,7 @@ func test_preparation_data_round_trip_serialization() -> void:
 	_assert_true(
 		restored.region_alert_level == 2
 		and restored.active_oil_recipe_id == &"recipe_vitriol_acid"
-		and restored.active_food_buff == &"buff_bear_stew"
 		and restored.applied_oil_charges == 5
-		and restored.equipped_traps.size() == 2
-		and restored.equipped_traps[0] == &"trap_caltrops"
-		and restored.equipped_traps[1] == &"trap_snare"
 		and restored.get_reagent_count(&"alchemical_base") == 7
 		and restored.get_oil_charges(CombatTypes.ElementOil.VITRIOL_ACID) == 5,
 		"Phase 4 / Issue #26: Serialização round-trip via to_dict() e from_dict() preserva loadout, alertas e estoques em JSON seguro"

@@ -162,11 +162,11 @@ func test_polymorphic_composite_scoring_and_selection_issue25() -> void:
 	var candidates: Array[Interactable] = [clue, campfire, reagent]
 
 	# Score: (100 * 1000) - 30 = 99970
-	var clue_score: float = PlayerInteractionComponent.compute_interactable_score(origin, clue)
+	var clue_score: float = PlayerInteractionComponent.compute_interactable_score(origin, Vector2.ZERO, clue)
 	# Score: (50 * 1000) - 10 = 49990
-	var campfire_score: float = PlayerInteractionComponent.compute_interactable_score(origin, campfire)
+	var campfire_score: float = PlayerInteractionComponent.compute_interactable_score(origin, Vector2.ZERO, campfire)
 	# Score: (10 * 1000) - 5 = 9995
-	var reagent_score: float = PlayerInteractionComponent.compute_interactable_score(origin, reagent)
+	var reagent_score: float = PlayerInteractionComponent.compute_interactable_score(origin, Vector2.ZERO, reagent)
 
 	var best_first: Interactable = PlayerInteractionComponent.select_best_interactable(origin, candidates)
 

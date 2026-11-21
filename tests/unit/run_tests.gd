@@ -1,23 +1,25 @@
 extends SceneTree
-## Runner CLI para execução headless de toda a suíte de testes do Projeto Huntress (SPEC-001, SPEC-002 & SPEC-003).
+## Runner CLI para execução headless de toda a suíte de testes do Projeto Huntress (SPEC-001, SPEC-002, SPEC-003 & SPEC-004).
 ## Uso: godot --headless --path . -s res://tests/unit/run_tests.gd
 
 
 func _init() -> void:
 	print("==============================================================")
-	print("🧪 HUNTRESS SDD TEST RUNNER — SPEC-001, SPEC-002 & SPEC-003")
+	print("🧪 HUNTRESS SDD TEST RUNNER — SPEC-001, SPEC-002, SPEC-003 & SPEC-004")
 	print("==============================================================")
 
 	var total_passed: int = 0
 	var total_failed: int = 0
 
 	var suites: Array[Variant] = [
-		["TestMovementMath (SPEC-001)", TestMovementMath.new()],
-		["TestPlayerStateMachine (SPEC-001)", TestPlayerStateMachine.new()],
-		["TestCombatDamageResolver (SPEC-002)", TestCombatDamageResolver.new()],
-		["TestCombatComponentsAndStates (SPEC-002)", TestCombatComponentsAndStates.new()],
-		["TestGrimoireTracker (SPEC-003)", TestGrimoireTracker.new()],
-		["TestInteractionAndClues (SPEC-003)", TestInteractionAndClues.new()],
+		["TestMovementMath (SPEC-001)", (load("res://tests/unit/test_movement_math.gd") as GDScript).new()],
+		["TestPlayerStateMachine (SPEC-001)", (load("res://tests/unit/test_player_state_machine.gd") as GDScript).new()],
+		["TestCombatDamageResolver (SPEC-002)", (load("res://tests/unit/test_combat_damage_resolver.gd") as GDScript).new()],
+		["TestCombatComponentsAndStates (SPEC-002)", (load("res://tests/unit/test_combat_components_and_states.gd") as GDScript).new()],
+		["TestGrimoireTracker (SPEC-003)", (load("res://tests/unit/test_grimoire_tracker.gd") as GDScript).new()],
+		["TestInteractionAndClues (SPEC-003)", (load("res://tests/unit/test_interaction_and_clues.gd") as GDScript).new()],
+		["TestPreparationManager (SPEC-004)", (load("res://tests/unit/test_preparation_manager.gd") as GDScript).new()],
+		["TestReagentAndCampfire (SPEC-004)", (load("res://tests/unit/test_reagent_and_campfire.gd") as GDScript).new()],
 	]
 
 	for entry: Variant in suites:

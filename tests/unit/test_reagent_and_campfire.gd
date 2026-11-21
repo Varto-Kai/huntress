@@ -70,16 +70,16 @@ func test_campfire_interaction_signal_emission_rf003() -> void:
 	var interaction: PlayerInteractionComponent = PlayerInteractionComponent.new()
 	var campfire: InteractableCampfire = InteractableCampfire.new()
 
-	var activated_count: int = 0
-	interaction.campfire_interacted.connect(func(_cf: InteractableCampfire) -> void:
-		activated_count += 1
+	var activated_campfires: Array[InteractableCampfire] = []
+	interaction.campfire_interacted.connect(func(cf: InteractableCampfire) -> void:
+		activated_campfires.append(cf)
 	)
 
 	interaction.register_candidate_for_test(campfire)
 	var ok: bool = interaction.try_start_interaction()
 
 	_assert_true(
-		ok and activated_count == 1,
+		ok and activated_campfires.size() == 1 and activated_campfires[0] == campfire,
 		"RF-003: Interagir com InteractableCampfire emite campfire_interacted de forma desacoplada"
 	)
 

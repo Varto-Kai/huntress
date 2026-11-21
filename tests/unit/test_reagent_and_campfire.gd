@@ -12,6 +12,7 @@ func run_all() -> Dictionary:
 
 	test_reagent_collection_depletes_and_campfire_rest_respawns_ec002()
 	test_campfire_interaction_signal_emission_rf003()
+	test_polymorphic_interaction_with_reagent_and_campfire_issue25()
 
 	return {
 		"passed": _results.size(),
@@ -83,5 +84,50 @@ func test_campfire_interaction_signal_emission_rf003() -> void:
 		"RF-003: Interagir com InteractableCampfire emite campfire_interacted de forma desacoplada"
 	)
 
+	campfire.free()
+	interaction.free()
+
+
+func test_polymorphic_interaction_with_reagent_and_campfire_issue25() -> void:
+	var interaction: PlayerInteractionComponent = PlayerInteractionComponent.new()
+	var campfire: InteractableCampfire = InteractableCampfire.new()
+	campfire.global_position = Vector2(20.0, 0.0)
+
+	var reagent: InteractableReagent = InteractableReagent.new()
+	reagent.global_position = Vector2(10.0, 0.0)
+	reagent.reagent_data = load("res://src/data/reagent_corrosive_bile.tres") as ReagentData
+
+	var completed_targets: Array[Interactable] = []
+	interaction.interaction_completed.connect(func(t: Interactable, _res: Variant) -> void:
+		completed_targets.append(t)
+	)
+
+	interaction.register_candidate_for_test(campfire)
+	interaction.register_candidate_for_test(reagent)
+
+	var first_focused: Interactable = interaction.focused_interactable
+	var campfire_ok: bool = interaction.try_start_interaction()
+
+	interaction.unregister_candidate_for_test(campfire)
+	var second_focused: Interactable = interaction.focused_interactable
+	var reagent_ok: bool = interaction.try_start_interaction()
+
+	var third_focused: Interactable = interaction.focused_interactable
+	var third_ok: bool = interaction.try_start_interaction()
+
+	_assert_true(
+		first_focused == campfire
+		and campfire_ok
+		and second_focused == reagent
+		and reagent_ok
+		and third_focused == null
+		and not third_ok
+		and completed_targets.size() == 2
+		and completed_targets[0] == campfire
+		and completed_targets[1] == reagent,
+		"Issue #25: PlayerInteractionComponent despacha interações polimórficas (Campfire/Reagent) e limpa foco quando esgotado"
+	)
+
+	reagent.free()
 	campfire.free()
 	interaction.free()

@@ -10,6 +10,7 @@ extends Resource
 @export var element_oil: CombatTypes.ElementOil = CombatTypes.ElementOil.NONE
 @export var team: CombatTypes.Team = CombatTypes.Team.PLAYER
 @export var direction: Vector2 = Vector2.DOWN
+@export var pierces_invulnerability_tags: Array[StringName] = []
 
 
 func sanitize() -> void:
@@ -17,6 +18,8 @@ func sanitize() -> void:
 	stagger_damage = maxf(stagger_damage, 0.0)
 	knockback_force = maxf(knockback_force, 0.0)
 	hitstop_duration = clampf(hitstop_duration, 0.0, 0.3)
+	if pierces_invulnerability_tags == null:
+		pierces_invulnerability_tags = []
 	if direction.length_squared() <= 0.0001:
 		direction = Vector2.DOWN
 	else:

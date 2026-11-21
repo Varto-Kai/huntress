@@ -1,7 +1,7 @@
 class_name HurtboxComponent
 extends Area2D
-## Componente Area2D que detecta HitboxComponent, verifica equipe e janelas de invulnerabilidade
-## (i-frames do DodgeState e do HealthComponent), resolve Fraqueza/Resistência e aplica dano (SPEC-002: RF-002, RF-003, RF-004, SC-003).
+## Componente Area2D que detecta HitboxComponent, delega invulnerabilidade ao HealthComponent,
+## resolve Fraqueza/Resistência e aplica dano (SPEC-002: RF-002, RF-003, RF-004, SC-003 e Architectural Deepening).
 
 signal hit_received(attack_data: AttackData, resolution: Dictionary)
 signal hit_ignored(attack_data: AttackData)
@@ -10,15 +10,13 @@ signal hit_ignored(attack_data: AttackData)
 @export var health_component: HealthComponent
 @export var stagger_component: StaggerComponent
 @export var defense_profile: DefenseProfileData
-@export var dodge_state: PlayerDodgeState
+@export var post_hit_mercy_duration: float = 0.0
 
 
-## Verifica se a entidade está invulnerável por i-frames de esquiva ou i-frames pós-dano (RF-003).
-func is_invulnerable() -> bool:
-	if dodge_state != null and dodge_state.is_invulnerable():
-		return true
-	if health_component != null and health_component.is_invulnerable():
-		return true
+## Verifica se a entidade está invulnerável via HealthComponent centralizado.
+func is_invulnerable(tag: StringName = &"") -> bool:
+	if health_component != null:
+		return health_component.is_invulnerable(tag)
 	return false
 
 
@@ -33,7 +31,14 @@ func receive_attack(attack_data: AttackData) -> Dictionary:
 	if health_component != null and health_component.is_dead():
 		return {"applied": false, "reason": "dead"}
 
-	if is_invulnerable():
+	var invulnerable: bool = false
+	if health_component != null:
+		if not attack_data.pierces_invulnerability_tags.is_empty():
+			invulnerable = health_component.is_invulnerable_against(attack_data.pierces_invulnerability_tags)
+		else:
+			invulnerable = health_component.is_invulnerable()
+
+	if invulnerable:
 		hit_ignored.emit(attack_data)
 		return {"applied": false, "reason": "invulnerable"}
 
@@ -58,6 +63,9 @@ func receive_attack(attack_data: AttackData) -> Dictionary:
 	if not damage_applied:
 		hit_ignored.emit(attack_data)
 		return {"applied": false, "reason": "health_rejected"}
+
+	if post_hit_mercy_duration > 0.0 and health_component != null:
+		health_component.grant_invulnerability(&"hit_recovery", post_hit_mercy_duration)
 
 	var triggered_stagger: bool = false
 	if stagger_component != null:

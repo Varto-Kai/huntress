@@ -13,6 +13,7 @@ signal dodge_cooldown_updated(time_remaining: float)
 @export var movement_component: MovementComponent
 @export var input_component: PlayerInputComponent
 @export var config: PlayerMovementConfig
+@export var health_component: HealthComponent
 
 var _locked_direction: Vector2 = Vector2.DOWN
 var _initial_dodge_speed: float = 460.0
@@ -91,6 +92,8 @@ func enter() -> void:
 	if _invulnerability_duration > 0.0:
 		_is_invulnerable = true
 		invulnerability_started.emit()
+		if health_component != null:
+			health_component.grant_invulnerability(&"dodge", _invulnerability_duration)
 	else:
 		_is_invulnerable = false
 
@@ -107,6 +110,8 @@ func physics_update(delta: float) -> void:
 	if _is_invulnerable and _elapsed_time >= _invulnerability_duration:
 		_is_invulnerable = false
 		invulnerability_ended.emit()
+		if health_component != null:
+			health_component.revoke_invulnerability(&"dodge")
 
 	var current_speed: float = _compute_current_dodge_speed()
 	if movement_component != null:
@@ -123,6 +128,8 @@ func exit() -> void:
 	if _is_invulnerable:
 		_is_invulnerable = false
 		invulnerability_ended.emit()
+		if health_component != null:
+			health_component.revoke_invulnerability(&"dodge")
 
 	_is_active = false
 	if config != null:

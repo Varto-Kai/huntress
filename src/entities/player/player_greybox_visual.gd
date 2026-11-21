@@ -23,6 +23,7 @@ var _attack_phase_name: StringName = &"WINDUP"
 var _is_dodge_invulnerable: bool = false
 var _is_post_hit_invulnerable: bool = false
 var _blink_accumulator: float = 0.0
+var _health_component: HealthComponent = null
 
 
 func _ready() -> void:
@@ -70,6 +71,7 @@ func bind_components(
 			attack_state.attack_phase_changed.connect(_on_attack_phase_changed)
 
 	if health_component != null:
+		_health_component = health_component
 		if not health_component.invulnerability_changed.is_connected(_on_post_hit_invulnerability_changed):
 			health_component.invulnerability_changed.connect(_on_post_hit_invulnerability_changed)
 
@@ -105,8 +107,11 @@ func _on_attack_phase_changed(phase_name: StringName) -> void:
 	_refresh_body_color()
 
 
-func _on_post_hit_invulnerability_changed(is_invulnerable: bool) -> void:
-	_is_post_hit_invulnerable = is_invulnerable
+func _on_post_hit_invulnerability_changed(is_invuln: bool) -> void:
+	if _health_component != null:
+		_is_post_hit_invulnerable = _health_component.is_invulnerable(&"hit_recovery") or _health_component.is_invulnerable(&"post_hit")
+	else:
+		_is_post_hit_invulnerable = is_invuln
 	_blink_accumulator = 0.0
 	_refresh_body_color()
 

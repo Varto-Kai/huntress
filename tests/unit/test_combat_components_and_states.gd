@@ -13,6 +13,7 @@ func run_all() -> Dictionary:
 	_test_combo_chain_fast_vs_heavy_rf006(results, failures)
 	_test_dodge_cancel_windows_rf007(results, failures)
 	_test_hurt_state_aborts_attack_and_deactivates_hitbox_ec003(results, failures)
+	_test_tagged_invulnerability_leases_rf008(results, failures)
 
 	return {"passed": results.size(), "failed": failures.size(), "results": results, "failures": failures}
 
@@ -62,6 +63,7 @@ func _build_combat_rig() -> Dictionary:
 	dodge_state.movement_component = movement
 	dodge_state.input_component = input_comp
 	dodge_state.config = config
+	dodge_state.health_component = health
 	attack_state.movement_component = movement
 	attack_state.input_component = input_comp
 	attack_state.combat_style_component = style_comp
@@ -71,7 +73,6 @@ func _build_combat_rig() -> Dictionary:
 	hurt_state.movement_component = movement
 	hurt_state.input_component = input_comp
 	hurt_state.config = config
-	hurtbox.dodge_state = dodge_state
 
 	sm.add_child(idle_state)
 	sm.add_child(move_state)
@@ -248,3 +249,60 @@ func _test_hurt_state_aborts_attack_and_deactivates_hitbox_ec003(results: Array[
 		failures
 	)
 	_free_combat_rig(rig)
+
+
+func _test_tagged_invulnerability_leases_rf008(results: Array[String], failures: Array[String]) -> void:
+	var hp: HealthComponent = HealthComponent.new()
+	hp.reset_health()
+
+	var initial_invuln: bool = hp.is_invulnerable()
+	hp.grant_invulnerability(&"dodge", 0.16)
+	hp.grant_invulnerability(&"hit_recovery", 0.60)
+
+	var both_active: bool = (
+		hp.is_invulnerable()
+		and hp.is_invulnerable(&"dodge")
+		and hp.is_invulnerable(&"hit_recovery")
+		and not hp.is_invulnerable(&"stagger_buff")
+	)
+	var durations_valid: bool = (
+		is_equal_approx(hp.get_invulnerability_remaining(&"dodge"), 0.16)
+		and is_equal_approx(hp.get_invulnerability_remaining(&"hit_recovery"), 0.60)
+		and is_equal_approx(hp.get_invulnerability_remaining(), 0.60)
+	)
+
+	# Concurrent duration handling: dodge expires at 0.20s, but hit_recovery remains active
+	hp._process(0.20)
+	var dodge_expired_recovery_active: bool = (
+		hp.is_invulnerable()
+		and not hp.is_invulnerable(&"dodge")
+		and hp.is_invulnerable(&"hit_recovery")
+		and is_equal_approx(hp.get_invulnerability_remaining(&"hit_recovery"), 0.40)
+	)
+
+	# Piercing check: an attack that pierces 'dodge' is still blocked while 'hit_recovery' is active
+	var pierced_dodge_safe: bool = hp.is_invulnerable_against([&"dodge"])
+	var pierced_all_hits: bool = not hp.is_invulnerable_against([&"dodge", &"hit_recovery"])
+
+	# Re-grant tag with longer duration: max duration is preserved
+	hp.grant_invulnerability(&"hit_recovery", 0.80)
+	var max_extended: bool = is_equal_approx(hp.get_invulnerability_remaining(&"hit_recovery"), 0.80)
+
+	# Explicit tag revocation
+	hp.revoke_invulnerability(&"hit_recovery")
+	var fully_vulnerable: bool = not hp.is_invulnerable() and not hp.is_invulnerable(&"hit_recovery")
+
+	hp.free()
+
+	_assert_true(
+		not initial_invuln and both_active and durations_valid,
+		"RF-008 / Issue #23: Leases de invulnerabilidade com tags concorrentes coexistem em HealthComponent",
+		results,
+		failures
+	)
+	_assert_true(
+		dodge_expired_recovery_active and pierced_dodge_safe and pierced_all_hits and max_extended and fully_vulnerable,
+		"RF-008 / Issue #23: Expiração e revogação de tags concorrentes preserva leases remanescentes e respeita piercing",
+		results,
+		failures
+	)

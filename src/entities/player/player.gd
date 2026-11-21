@@ -45,6 +45,7 @@ func _ready() -> void:
 	dodge_state.movement_component = movement_component
 	dodge_state.input_component = input_component
 	dodge_state.config = movement_config
+	dodge_state.health_component = health_component
 
 	if attack_state != null:
 		attack_state.movement_component = movement_component
@@ -62,7 +63,6 @@ func _ready() -> void:
 	if hurtbox_component != null:
 		hurtbox_component.team = CombatTypes.Team.PLAYER
 		hurtbox_component.health_component = health_component
-		hurtbox_component.dodge_state = dodge_state
 
 	if interaction_component != null:
 		interaction_component.state_machine = state_machine

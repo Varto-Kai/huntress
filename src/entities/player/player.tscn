@@ -67,11 +67,10 @@ visible = false
 color = Color(1, 0.231373, 0.188235, 0.85)
 polygon = PackedVector2Array(5, -13, 31, -9, 35, 0, 31, 9, 5, 13)
 
-[node name="HurtboxComponent" type="Area2D" parent="." node_paths=PackedStringArray("health_component", "dodge_state")]
+[node name="HurtboxComponent" type="Area2D" parent="." node_paths=PackedStringArray("health_component")]
 script = ExtResource("11_hurtbox")
 team = 0
 health_component = NodePath("../HealthComponent")
-dodge_state = NodePath("../StateMachine/DodgeState")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="HurtboxComponent"]
 shape = SubResource("CircleShape2D_foot")
@@ -125,10 +124,11 @@ movement_component = NodePath("../../MovementComponent")
 input_component = NodePath("../../PlayerInputComponent")
 dodge_state = NodePath("../DodgeState")
 
-[node name="DodgeState" type="Node" parent="StateMachine" node_paths=PackedStringArray("movement_component", "input_component")]
+[node name="DodgeState" type="Node" parent="StateMachine" node_paths=PackedStringArray("movement_component", "input_component", "health_component")]
 script = ExtResource("9_dodge")
 movement_component = NodePath("../../MovementComponent")
 input_component = NodePath("../../PlayerInputComponent")
+health_component = NodePath("../../HealthComponent")
 config = ExtResource("2_cfg")
 
 [node name="AttackState" type="Node" parent="StateMachine" node_paths=PackedStringArray("movement_component", "input_component", "combat_style_component", "hitbox_component", "weapon_pivot", "dodge_state")]

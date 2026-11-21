@@ -15,6 +15,9 @@ func run_all() -> Dictionary:
 	test_successful_crafting_and_hit_connected_charge_depletion_q2_ec004()
 	test_silent_prey_adaptation_scaling_and_true_weakness_preservation_q4()
 	test_defensive_null_and_invalid_resource_handling_ec005()
+	test_preparation_data_isolation_and_cloning()
+	test_preparation_data_round_trip_serialization()
+	test_preparation_validation_and_application_against_alert_level()
 
 	return {
 		"passed": _results.size(),
@@ -147,4 +150,110 @@ func test_defensive_null_and_invalid_resource_handling_ec005() -> void:
 		and added_invalid == 0
 		and not bool(craft_null.get("success", true)),
 		"EC-005: PreparationManager rejeita ReagentData/OilRecipeData nulos e quantidades negativas sem crash"
+	)
+
+
+func test_preparation_data_isolation_and_cloning() -> void:
+	var base_preset: PreparationData = PreparationData.new()
+	base_preset.max_oil_charges = 24
+	var base_reagent: ReagentData = load("res://src/data/reagent_alchemical_base.tres") as ReagentData
+	base_preset.register_reagent(base_reagent)
+	base_preset.add_reagent(base_reagent, 2)
+
+	var inv1: InventoryComponent = InventoryComponent.new()
+	inv1.preparation_data = base_preset
+	inv1.ensure_default_catalog()
+
+	var inv2: InventoryComponent = InventoryComponent.new()
+	inv2.preparation_data = base_preset
+	inv2.ensure_default_catalog()
+
+	# Mutar inv1 (adiciona 5, respeitando max_stack = 10 de alchemical_base)
+	inv1.collect_reagent_from_world(base_reagent, 5)
+
+	var c_inv1: int = inv1.get_reagent_count(&"alchemical_base")
+	var c_inv2: int = inv2.get_reagent_count(&"alchemical_base")
+	var c_base: int = base_preset.get_reagent_count(&"alchemical_base")
+
+	_assert_true(
+		c_inv1 == 7
+		and c_inv2 == 2
+		and c_base == 2,
+		"Phase 4 / Constitution: PreparationData.duplicate()/clone() isola o estado entre instâncias sem contaminação mútua"
+	)
+	inv1.free()
+	inv2.free()
+
+
+func test_preparation_data_round_trip_serialization() -> void:
+	var pdata: PreparationData = PreparationData.new()
+	pdata.region_alert_level = 2
+	pdata.active_oil_recipe_id = &"recipe_vitriol_acid"
+	pdata.equipped_traps = [&"trap_caltrops", &"trap_snare"]
+	pdata.active_food_buff = &"buff_bear_stew"
+	pdata.applied_oil_charges = 5
+
+	var base_reagent: ReagentData = load("res://src/data/reagent_alchemical_base.tres") as ReagentData
+	pdata.register_reagent(base_reagent)
+	pdata.add_reagent(base_reagent, 7)
+	pdata.set_oil_charges(CombatTypes.ElementOil.VITRIOL_ACID, 5)
+
+	var dict: Dictionary = pdata.to_dict()
+
+	var restored: PreparationData = PreparationData.new()
+	restored.from_dict(dict)
+
+	_assert_true(
+		restored.region_alert_level == 2
+		and restored.active_oil_recipe_id == &"recipe_vitriol_acid"
+		and restored.active_food_buff == &"buff_bear_stew"
+		and restored.applied_oil_charges == 5
+		and restored.equipped_traps.size() == 2
+		and restored.equipped_traps[0] == &"trap_caltrops"
+		and restored.equipped_traps[1] == &"trap_snare"
+		and restored.get_reagent_count(&"alchemical_base") == 7
+		and restored.get_oil_charges(CombatTypes.ElementOil.VITRIOL_ACID) == 5,
+		"Phase 4 / Issue #26: Serialização round-trip via to_dict() e from_dict() preserva loadout, alertas e estoques em JSON seguro"
+	)
+
+
+func test_preparation_validation_and_application_against_alert_level() -> void:
+	var pdata: PreparationData = PreparationData.new()
+	pdata.ensure_default_catalog()
+	pdata.region_alert_level = 2
+
+	# Sem cargas de vitríolo ácido inicialmente
+	var invalid_check: Dictionary = pdata.validate_preparation(&"recipe_vitriol_acid")
+	_assert_true(
+		not bool(invalid_check.get("valid", true))
+		and int(invalid_check.get("alert_level", 0)) == 2
+		and int(invalid_check.get("charges", -1)) == 0,
+		"Issue #26: validate_preparation() rejeita receita sem cargas disponíveis contra o nível de alerta regional"
+	)
+
+	# Adiciona cargas e valida novamente
+	pdata.set_oil_charges(CombatTypes.ElementOil.VITRIOL_ACID, 8)
+	var valid_check: Dictionary = pdata.validate_preparation(&"recipe_vitriol_acid")
+	_assert_true(
+		bool(valid_check.get("valid", false))
+		and int(valid_check.get("charges", 0)) == 8
+		and int(valid_check.get("alert_level", 0)) == 2,
+		"Issue #26: validate_preparation() aprova receita com cargas válidas e reporta nível de alerta da presa"
+	)
+
+	# Aplica a preparação
+	var applied_events: Array[Dictionary] = []
+	pdata.preparation_applied.connect(func(recipe_id: StringName, charges: int) -> void:
+		applied_events.append({"recipe_id": recipe_id, "charges": charges})
+	)
+
+	var ok_applied: bool = pdata.apply_preparation(&"recipe_vitriol_acid")
+	_assert_true(
+		ok_applied
+		and pdata.active_oil_recipe_id == &"recipe_vitriol_acid"
+		and pdata.applied_oil_charges == 8
+		and applied_events.size() == 1
+		and applied_events[0]["recipe_id"] == &"recipe_vitriol_acid"
+		and applied_events[0]["charges"] == 8,
+		"Issue #26: apply_preparation() sincroniza active_oil_recipe_id, applied_oil_charges e emite preparation_applied"
 	)

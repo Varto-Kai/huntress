@@ -1,7 +1,7 @@
 class_name InventoryComponent
 extends Node
-## Componente acoplado à Caçadora que encapsula o PreparationManager e emite sinais
-## desacoplados para reagentes, síntese de Óleos, cargas e descanso na Fogueira (SPEC-004: RF-002, RF-005).
+## Componente de inventário da Caçadora conectado ao PreparationData Resource (SPEC-004 / Issue #26).
+## Desacopla parâmetros do Inspector via Resource e sincroniza sinais de alquimia e cargas de óleos.
 
 signal reagent_count_changed(reagent_id: StringName, new_count: int)
 signal oil_charges_changed(oil: CombatTypes.ElementOil, new_charges: int)
@@ -10,126 +10,150 @@ signal crafting_failed(recipe_id: StringName, reason: String)
 signal active_oil_depleted(depleted_oil: CombatTypes.ElementOil)
 signal campfire_rest_completed(new_hidden_alert_level: int)
 
-@export var known_reagents: Array[ReagentData] = []
-@export var known_recipes: Array[OilRecipeData] = []
-@export_range(1, 50, 1) var max_oil_charges: int = 16
-@export_range(1, 5, 1) var max_alert_level: int = 3
-@export_range(0.05, 0.40, 0.05) var non_weakness_penalty_per_level: float = 0.20
-@export_range(0.0, 0.50, 0.05) var stagger_scale_per_level: float = 0.15
-@export_range(0.0, 0.30, 0.02) var hazard_speedup_per_level: float = 0.12
+@export var preparation_data: PreparationData = null
 
-var manager: PreparationManager = PreparationManager.new()
+var manager: PreparationData:
+	get:
+		if preparation_data == null:
+			ensure_default_catalog()
+		return preparation_data
+	set(val):
+		preparation_data = val
+		_connect_preparation_signals()
+
+var max_oil_charges: int:
+	get:
+		if preparation_data == null:
+			ensure_default_catalog()
+		return preparation_data.max_oil_charges
+	set(val):
+		if preparation_data == null:
+			ensure_default_catalog()
+		preparation_data.max_oil_charges = val
+
+var known_reagents: Array[ReagentData]:
+	get:
+		if preparation_data == null:
+			ensure_default_catalog()
+		return preparation_data.known_reagents
+	set(val):
+		if preparation_data == null:
+			ensure_default_catalog()
+		preparation_data.known_reagents = val
+
+var known_recipes: Array[OilRecipeData]:
+	get:
+		if preparation_data == null:
+			ensure_default_catalog()
+		return preparation_data.known_recipes
+	set(val):
+		if preparation_data == null:
+			ensure_default_catalog()
+		preparation_data.known_recipes = val
+
+var _is_isolated: bool = false
 
 
 func _ready() -> void:
-	_sync_parameters()
 	ensure_default_catalog()
 
 
-func _sync_parameters() -> void:
-	manager.max_oil_charges = max_oil_charges
-	manager.max_alert_level = max_alert_level
-	manager.non_weakness_penalty_per_level = non_weakness_penalty_per_level
-	manager.stagger_scale_per_level = stagger_scale_per_level
-	manager.hazard_speedup_per_level = hazard_speedup_per_level
-
-
 func ensure_default_catalog() -> void:
-	_sync_parameters()
-	if known_reagents.is_empty():
-		var default_reagent_paths: Array[String] = [
-			"res://src/data/reagent_alchemical_base.tres",
-			"res://src/data/reagent_corrosive_bile.tres",
-			"res://src/data/reagent_sulfur_powder.tres",
-			"res://src/data/reagent_flammable_tallow.tres",
-			"res://src/data/reagent_dry_ember.tres",
-		]
-		for p: String in default_reagent_paths:
-			var r: ReagentData = load(p) as ReagentData
-			if r != null:
-				known_reagents.append(r)
+	if preparation_data == null:
+		preparation_data = PreparationData.new()
+		_is_isolated = true
+	elif not _is_isolated:
+		preparation_data = preparation_data.clone() if preparation_data.has_method("clone") else preparation_data.duplicate() as PreparationData
+		_is_isolated = true
 
-	for r_data: ReagentData in known_reagents:
-		if r_data != null:
-			manager.register_reagent(r_data)
+	_connect_preparation_signals()
+	preparation_data.ensure_default_catalog()
 
-	if known_recipes.is_empty():
-		var default_recipe_paths: Array[String] = [
-			"res://src/data/recipe_vitriol_acid.tres",
-			"res://src/data/recipe_ignis_oil.tres",
-		]
-		for rp: String in default_recipe_paths:
-			var rec: OilRecipeData = load(rp) as OilRecipeData
-			if rec != null:
-				known_recipes.append(rec)
 
-	for rec_data: OilRecipeData in known_recipes:
-		if rec_data != null:
-			manager.register_recipe(rec_data)
+func _connect_preparation_signals() -> void:
+	if preparation_data == null:
+		return
+	if not preparation_data.reagent_count_changed.is_connected(_on_pdata_reagent_count_changed):
+		preparation_data.reagent_count_changed.connect(_on_pdata_reagent_count_changed)
+	if not preparation_data.oil_charges_changed.is_connected(_on_pdata_oil_charges_changed):
+		preparation_data.oil_charges_changed.connect(_on_pdata_oil_charges_changed)
+	if not preparation_data.oil_crafted.is_connected(_on_pdata_oil_crafted):
+		preparation_data.oil_crafted.connect(_on_pdata_oil_crafted)
+	if not preparation_data.crafting_failed.is_connected(_on_pdata_crafting_failed):
+		preparation_data.crafting_failed.connect(_on_pdata_crafting_failed)
+	if not preparation_data.active_oil_depleted.is_connected(_on_pdata_active_oil_depleted):
+		preparation_data.active_oil_depleted.connect(_on_pdata_active_oil_depleted)
+	if not preparation_data.campfire_rest_completed.is_connected(_on_pdata_campfire_rest_completed):
+		preparation_data.campfire_rest_completed.connect(_on_pdata_campfire_rest_completed)
+
+
+func _on_pdata_reagent_count_changed(reagent_id: StringName, new_count: int) -> void:
+	reagent_count_changed.emit(reagent_id, new_count)
+
+
+func _on_pdata_oil_charges_changed(oil: CombatTypes.ElementOil, new_charges: int) -> void:
+	oil_charges_changed.emit(oil, new_charges)
+
+
+func _on_pdata_oil_crafted(recipe: OilRecipeData, new_charges: int) -> void:
+	oil_crafted.emit(recipe, new_charges)
+
+
+func _on_pdata_crafting_failed(recipe_id: StringName, reason: String) -> void:
+	crafting_failed.emit(recipe_id, reason)
+
+
+func _on_pdata_active_oil_depleted(depleted_oil: CombatTypes.ElementOil) -> void:
+	active_oil_depleted.emit(depleted_oil)
+
+
+func _on_pdata_campfire_rest_completed(new_hidden_alert_level: int) -> void:
+	campfire_rest_completed.emit(new_hidden_alert_level)
 
 
 func collect_reagent_from_world(reagent_data: ReagentData, amount: int = 1) -> int:
 	ensure_default_catalog()
 	if reagent_data == null or not reagent_data.is_valid():
 		return 0
-	var new_count: int = manager.add_reagent(reagent_data, amount)
-	reagent_count_changed.emit(reagent_data.reagent_id, new_count)
-	return new_count
+	return preparation_data.add_reagent(reagent_data, amount)
 
 
 func get_reagent_count(reagent_id: StringName) -> int:
-	return manager.get_reagent_count(reagent_id)
+	ensure_default_catalog()
+	return preparation_data.get_reagent_count(reagent_id)
 
 
 func get_oil_charges(oil: CombatTypes.ElementOil) -> int:
-	return manager.get_oil_charges(oil)
+	ensure_default_catalog()
+	return preparation_data.get_oil_charges(oil)
 
 
 func has_oil_charges(oil: CombatTypes.ElementOil) -> bool:
 	if oil == CombatTypes.ElementOil.NONE:
 		return true
-	return manager.get_oil_charges(oil) > 0
+	ensure_default_catalog()
+	return preparation_data.get_oil_charges(oil) > 0
 
 
 func try_craft_recipe(recipe: OilRecipeData) -> bool:
 	ensure_default_catalog()
-	var result: Dictionary = manager.craft_oil(recipe)
-	if not bool(result.get("success", false)):
-		var rec_id: StringName = recipe.recipe_id if recipe != null else &""
-		crafting_failed.emit(rec_id, String(result.get("reason", "Falha na síntese.")))
-		return false
-
-	var reqs: Dictionary = recipe.get_requirements_map()
-	for r_id_var: Variant in reqs.keys():
-		var r_id: StringName = r_id_var as StringName
-		reagent_count_changed.emit(r_id, manager.get_reagent_count(r_id))
-
-	var new_charges: int = int(result.get("total_charges", 0))
-	oil_charges_changed.emit(recipe.result_oil, new_charges)
-	oil_crafted.emit(recipe, new_charges)
-	return true
+	var result: Dictionary = preparation_data.craft_oil(recipe)
+	return bool(result.get("success", false))
 
 
 func consume_charge_for_oil(oil: CombatTypes.ElementOil) -> bool:
 	if oil == CombatTypes.ElementOil.NONE:
 		return false
-	var res: Dictionary = manager.consume_oil_charge(oil)
-	if bool(res.get("consumed", false)):
-		var remaining: int = int(res.get("remaining", 0))
-		oil_charges_changed.emit(oil, remaining)
-		if bool(res.get("depleted", false)):
-			active_oil_depleted.emit(oil)
-		return true
-	if bool(res.get("depleted", false)):
-		active_oil_depleted.emit(oil)
-	return false
+	ensure_default_catalog()
+	var res: Dictionary = preparation_data.consume_oil_charge(oil)
+	return bool(res.get("consumed", false))
 
 
 func trigger_campfire_rest() -> int:
-	var new_alert: int = manager.register_campfire_rest()
-	campfire_rest_completed.emit(new_alert)
-	return new_alert
+	ensure_default_catalog()
+	return preparation_data.register_campfire_rest()
 
 
 func get_hidden_alert_level() -> int:
-	return manager.region_alert_level
+	ensure_default_catalog()
+	return preparation_data.region_alert_level
